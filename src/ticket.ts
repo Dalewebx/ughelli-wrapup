@@ -9,7 +9,7 @@ type Order = { ref: string; name: string; tickets: Ticket[] };
 
 let ev: EventBits = {
   title: 'Ughelli Regional Choir End of Year Annual Wrap-Up',
-  venue: "Jaylayian's Amusement Park and Resort",
+  venue: "Jaylayian's Resort",
   starts_at: '2026-12-12T09:00:00Z',
 };
 let helpPhone = '0806 625 5265';
