@@ -123,6 +123,7 @@ export function publicSettings(s: any) {
     sales_open: s.sales_open,
     test_mode: s.test_mode,
     closed_note: s.closed_note,
+    hero_image: s.hero_image || null,
   };
 }
 

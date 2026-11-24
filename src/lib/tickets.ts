@@ -4,14 +4,14 @@ import { esc, fmtDate, Kind, KIND_LABEL, longDate, Ticket, timeOf } from './comm
 export type EventBits = { title: string; venue: string; starts_at: string };
 
 const THEME: Record<Kind, { band: string; band2: string; ink: string; chip: string }> = {
-  regular: { band: '#0fa3b1', band2: '#22b8c4', ink: '#ffffff', chip: 'rgba(255,255,255,.22)' },
-  vip: { band: '#0a7a86', band2: '#139aa7', ink: '#ffffff', chip: 'rgba(255,255,255,.2)' },
-  vvip: { band: '#f2b705', band2: '#ffd35c', ink: '#3b2a00', chip: 'rgba(59,42,0,.12)' },
-  test: { band: '#7f9a9f', band2: '#a3b8bc', ink: '#ffffff', chip: 'rgba(255,255,255,.22)' },
+  regular: { band: '#15131a', band2: '#2b2833', ink: '#ffffff', chip: 'rgba(255,255,255,.14)' },
+  vip: { band: '#15131a', band2: '#3a2a1c', ink: '#ffffff', chip: 'rgba(255,178,26,.25)' },
+  vvip: { band: '#ff7a1a', band2: '#ffb21a', ink: '#15131a', chip: 'rgba(21,19,26,.12)' },
+  test: { band: '#8d8a96', band2: '#a9a6b1', ink: '#ffffff', chip: 'rgba(255,255,255,.22)' },
 };
 
 export async function qrSvg(code: string): Promise<string> {
-  return QRCode.toString(code, { type: 'svg', margin: 0, errorCorrectionLevel: 'M', color: { dark: '#12343b', light: '#ffffff' } });
+  return QRCode.toString(code, { type: 'svg', margin: 0, errorCorrectionLevel: 'M', color: { dark: '#15131a', light: '#ffffff' } });
 }
 
 export async function ticketCard(t: Ticket, holder: string, ev: EventBits, index: number, total: number): Promise<string> {
@@ -84,10 +84,10 @@ export async function ticketPng(t: Ticket, holder: string, ev: EventBits, index:
   c.height = H;
   const ctx = c.getContext('2d')!;
   const th = THEME[t.kind];
-  const head = "'Familjen Grotesk', 'Segoe UI', sans-serif";
-  const body = "'Atkinson Hyperlegible', 'Segoe UI', sans-serif";
+  const head = "'Oswald', 'Arial Narrow', sans-serif";
+  const body = "-apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
 
-  ctx.fillStyle = '#e2f5f7';
+  ctx.fillStyle = '#f3f2f7';
   ctx.fillRect(0, 0, W, H);
 
   const X = 70;
@@ -110,14 +110,6 @@ export async function ticketPng(t: Ticket, holder: string, ev: EventBits, index:
   g.addColorStop(1, th.band2);
   ctx.fillStyle = g;
   ctx.fillRect(X, 70, CW, 420);
-  ctx.strokeStyle = th.ink === '#ffffff' ? 'rgba(255,255,255,.25)' : 'rgba(59,42,0,.14)';
-  ctx.lineWidth = 4;
-  for (let row = 0; row < 3; row++) {
-    ctx.beginPath();
-    const y = 400 + row * 26;
-    for (let x = X; x <= X + CW; x += 4) ctx.lineTo(x, y + Math.sin((x / CW) * Math.PI * 8) * 7);
-    ctx.stroke();
-  }
   ctx.restore();
 
   ctx.fillStyle = th.ink;
@@ -128,7 +120,7 @@ export async function ticketPng(t: Ticket, holder: string, ev: EventBits, index:
     y += 44;
   }
   ctx.font = `700 92px ${head}`;
-  ctx.fillText(KIND_LABEL[t.kind], X + 60, y + 78);
+  ctx.fillText(KIND_LABEL[t.kind].toUpperCase(), X + 60, y + 78);
   ctx.font = `700 36px ${body}`;
   const adm = `ADMITS ${t.admits}`;
   const aw = ctx.measureText(adm).width + 48;
@@ -146,11 +138,11 @@ export async function ticketPng(t: Ticket, holder: string, ev: EventBits, index:
   ];
   y = 560;
   for (const [l1, v1, l2, v2] of rows) {
-    ctx.fillStyle = '#7f9a9f';
+    ctx.fillStyle = '#8d8a96';
     ctx.font = `700 24px ${body}`;
     ctx.fillText(l1, X + 60, y);
     if (l2) ctx.fillText(l2, X + CW - 260, y);
-    ctx.fillStyle = '#12343b';
+    ctx.fillStyle = '#15131a';
     ctx.font = `700 36px ${body}`;
     ctx.fillText(wrap(ctx, v1, l2 ? CW - 360 : CW - 120)[0], X + 60, y + 46);
     if (v2) ctx.fillText(v2, X + CW - 260, y + 46);
@@ -159,12 +151,12 @@ export async function ticketPng(t: Ticket, holder: string, ev: EventBits, index:
 
   // perforation
   const py = 900;
-  ctx.fillStyle = '#e2f5f7';
+  ctx.fillStyle = '#f3f2f7';
   ctx.beginPath();
   ctx.arc(X, py, 30, 0, Math.PI * 2);
   ctx.arc(X + CW, py, 30, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = '#d6e7e8';
+  ctx.strokeStyle = '#e2e0e8';
   ctx.lineWidth = 4;
   ctx.setLineDash([16, 14]);
   ctx.beginPath();
@@ -175,13 +167,13 @@ export async function ticketPng(t: Ticket, holder: string, ev: EventBits, index:
 
   // QR
   const qrCanvas = document.createElement('canvas');
-  await QRCode.toCanvas(qrCanvas, t.code, { width: 520, margin: 0, errorCorrectionLevel: 'M', color: { dark: '#12343b', light: '#ffffff' } });
+  await QRCode.toCanvas(qrCanvas, t.code, { width: 520, margin: 0, errorCorrectionLevel: 'M', color: { dark: '#15131a', light: '#ffffff' } });
   ctx.drawImage(qrCanvas, (W - 520) / 2, 960, 520, 520);
-  ctx.fillStyle = '#12343b';
+  ctx.fillStyle = '#15131a';
   ctx.font = `700 44px ${head}`;
   ctx.textAlign = 'center';
   ctx.fillText(t.code, W / 2, 1550);
-  ctx.fillStyle = '#4b6b71';
+  ctx.fillStyle = '#5d5a66';
   ctx.font = `400 28px ${body}`;
   ctx.fillText('Show this QR at the gate. Each code works once.', W / 2, 1600);
   ctx.textAlign = 'left';

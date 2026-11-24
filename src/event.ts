@@ -1,6 +1,6 @@
 import './styles/base.css';
 import './styles/event.css';
-import { api, BRAND_MARK, EventInfo, esc, fmtDate, iconFor, Kind, KIND_LABEL, KIND_NOTE, longDate, naira, store, timeOf, waNumber, withFee } from './lib/common';
+import { api, EventInfo, esc, fmtDate, Kind, KIND_LABEL, KIND_NOTE, longDate, naira, store, timeOf, waNumber, withFee } from './lib/common';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -20,13 +20,13 @@ const DEFAULT: EventInfo = {
   closed_note: '',
 };
 
+const DEFAULT_HERO = 'https://images.unsplash.com/photo-1768243803432-f95b00d29de2?w=1400&q=70&auto=format';
 const showTest = new URLSearchParams(location.search).get('test') === '1';
 let info: EventInfo = DEFAULT;
 const qty: Record<Kind, number> = { regular: 0, vip: 0, vvip: 0, test: 0 };
 const MAX = 10;
 const guestNames: Record<string, string> = {};
 
-$('brand').insertAdjacentHTML('afterbegin', BRAND_MARK);
 
 function kinds(): Kind[] {
   const list: Kind[] = ['regular', 'vip', 'vvip'];
@@ -43,21 +43,20 @@ function renderInfo() {
   $('title').textContent = info.title;
   $('org').textContent = info.organizer;
   $('date-line').textContent = longDate(info.starts_at);
-  $('time-line').textContent = `Starts ${timeOf(info.starts_at)}`;
-  $('pool-day').textContent = fmtDate(info.starts_at, { weekday: 'long' });
-  $('pool-num').textContent = fmtDate(info.starts_at, { day: 'numeric' });
-  $('pool-mon').textContent = fmtDate(info.starts_at, { month: 'long' });
+  $('time-line').textContent = timeOf(info.starts_at);
   $('venue').textContent = info.venue;
   $('venue-area').textContent = info.venue_area;
+  $('area-pill').hidden = !info.venue_area;
+  $('hero').style.backgroundImage = `url("${(info.hero_image || DEFAULT_HERO).replace(/"/g, '%22')}")`;
   $('about').textContent = info.about;
-  $('highlights').innerHTML = info.highlights.map((h) => `<li>${iconFor(h)}<span>${esc(h)}</span></li>`).join('');
+  $('highlights').innerHTML = info.highlights.map((h) => `<li>${esc(h)}</li>`).join('');
 
   const phone = info.contact_phone.trim();
-  $('contact-line').textContent = phone ? `Call or WhatsApp ${phone}` : 'Reach the organisers through your choir.';
+  $('contact-line').textContent = phone ? `Questions? Call or WhatsApp ${phone}` : 'Questions? Reach the organisers through your choir.';
   const wa = waNumber(phone);
   ($('wa-link') as HTMLAnchorElement).href = `https://wa.me/${wa}`;
   ($('call-link') as HTMLAnchorElement).href = `tel:+${wa}`;
-  $('wa-link').parentElement!.hidden = !phone;
+  ($('wa-link').parentElement as HTMLElement).hidden = !phone;
 
   const min = Math.min(info.prices.regular, info.prices.vip, info.prices.vvip);
   $('from').textContent = naira(min);

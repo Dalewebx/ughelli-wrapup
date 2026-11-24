@@ -1,26 +1,26 @@
 body.door {
-  background: #0e2a30;
-  color: #eaf6f7;
+  background: #15131a;
+  color: #f3f2f7;
   min-height: 100vh;
   min-height: 100dvh;
 }
 
 .door .input {
-  background: #163b43;
-  border-color: #24525b;
+  background: #24212b;
+  border-color: #363241;
   color: #fff;
 }
 
 .door .input::placeholder {
-  color: #8fb3b8;
+  color: #8d8a96;
 }
 
 .door .field label {
-  color: #a9cdd2;
+  color: #a5a2ad;
 }
 
 .door .btn-primary {
-  background: var(--pool);
+  background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: var(--ink);
 }
 
 .d-login {
@@ -34,7 +34,7 @@ body.door {
 }
 
 .d-login p {
-  color: #a9cdd2;
+  color: #a5a2ad;
   margin: 6px 0 28px;
 }
 
@@ -58,14 +58,14 @@ body.door {
 }
 
 .d-top small {
-  color: #a9cdd2;
+  color: #a5a2ad;
   font-size: 14px;
 }
 
 .d-out {
-  background: #163b43;
+  background: #24212b;
   border: 0;
-  color: #cfe7ea;
+  color: #d6d4dc;
   padding: 9px 14px;
   border-radius: 999px;
   font-weight: 700;
@@ -77,7 +77,7 @@ body.door {
   aspect-ratio: 1 / 1;
   border-radius: 26px;
   overflow: hidden;
-  background: #071a1e;
+  background: #0b0a0e;
 }
 
 .d-cam video {
@@ -135,7 +135,7 @@ body.door {
   left: 50%;
   bottom: 14px;
   transform: translateX(-50%);
-  background: rgba(7, 26, 30, 0.75);
+  background: rgba(11, 10, 14, 0.75);
   padding: 7px 14px;
   border-radius: 999px;
   font-size: 14px;
@@ -158,7 +158,7 @@ body.door {
 }
 
 .d-last {
-  color: #a9cdd2;
+  color: #a5a2ad;
   font-size: 14px;
   min-height: 20px;
   margin: 12px 2px 0;
@@ -192,7 +192,7 @@ body.door {
 }
 
 .d-result.wait {
-  background: #0e2a30;
+  background: #15131a;
 }
 
 .d-res-inner {

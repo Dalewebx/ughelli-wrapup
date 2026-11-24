@@ -1,10 +1,9 @@
 import './styles/base.css';
 import './styles/ticket.css';
-import { api, BRAND_MARK, EventInfo, esc, store, Ticket } from './lib/common';
+import { api, EventInfo, esc, store, Ticket } from './lib/common';
 import { downloadBlob, EventBits, saveTicketImage, ticketCard, ticketPng } from './lib/tickets';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
-$('brand').insertAdjacentHTML('afterbegin', BRAND_MARK);
 
 type Order = { ref: string; name: string; tickets: Ticket[] };
 

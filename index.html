@@ -10,109 +10,73 @@
     <meta property="og:description" content="Sat 12 Dec 2026, 10am · Jaylayians Amusement Resort. Tickets from ₦8,000." />
     <meta property="og:image" content="https://ughelli.sccwd.org/og.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="theme-color" content="#f3f9f9" />
+    <meta name="theme-color" content="#f3f2f7" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Familjen+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1768243803432-f95b00d29de2?w=1400&q=70&auto=format" />
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="/" id="brand">SCCWD Ughelli Region</a>
+      <a class="brand" href="/">SCCWD · Ughelli Region</a>
       <a class="toplink" href="/ticket">Find my ticket</a>
     </header>
 
     <main class="ev">
-      <section class="ev-info">
-        <div class="pool" aria-hidden="true">
-          <svg class="pool-tiles" viewBox="0 0 600 300" preserveAspectRatio="none">
-            <defs>
-              <pattern id="tiles" width="30" height="30" patternUnits="userSpaceOnUse">
-                <path d="M30 0H0V30" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1" />
-              </pattern>
-            </defs>
-            <rect width="600" height="300" fill="url(#tiles)" />
-          </svg>
-          <svg class="pool-caustics" viewBox="0 0 1200 300" preserveAspectRatio="none">
-            <g fill="none" stroke="rgba(255,255,255,.34)" stroke-width="2.2" stroke-linecap="round">
-              <path d="M0 60c50-22 100-22 150 0s100 22 150 0 100-22 150 0 100 22 150 0 100-22 150 0 100 22 150 0 100-22 150 0 100 22 150 0" />
-              <path d="M0 140c50-18 100-18 150 0s100 18 150 0 100-18 150 0 100 18 150 0 100-18 150 0 100 18 150 0 100-18 150 0 100 18 150 0" opacity=".7" />
-              <path d="M0 220c50-22 100-22 150 0s100 22 150 0 100-22 150 0 100 22 150 0 100-22 150 0 100 22 150 0 100-22 150 0 100 22 150 0" opacity=".5" />
-            </g>
-          </svg>
-          <div class="lane"></div>
-          <svg class="ball" viewBox="0 0 100 100">
-            <defs><clipPath id="bc"><circle cx="50" cy="50" r="46" /></clipPath></defs>
-            <g clip-path="url(#bc)">
-              <rect width="100" height="100" fill="#fff" />
-              <path d="M50 50 L50 -10 A60 60 0 0 1 102 20 Z" fill="#ffc93c" />
-              <path d="M50 50 L102 20 A60 60 0 0 1 102 80 Z" fill="#fff" />
-              <path d="M50 50 L102 80 A60 60 0 0 1 50 110 Z" fill="#ff7a59" />
-              <path d="M50 50 L50 110 A60 60 0 0 1 -2 80 Z" fill="#fff" />
-              <path d="M50 50 L-2 80 A60 60 0 0 1 -2 20 Z" fill="#0fa3b1" />
-              <circle cx="50" cy="50" r="9" fill="#fff" />
-              <ellipse cx="34" cy="28" rx="14" ry="8" fill="rgba(255,255,255,.55)" />
-            </g>
-            <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(18,52,59,.12)" stroke-width="2" />
-          </svg>
-          <div class="pool-date">
-            <span class="pool-day" id="pool-day">Sat</span>
-            <span class="pool-num" id="pool-num">12</span>
-            <span class="pool-mon" id="pool-mon">December</span>
+      <div class="ev-left">
+        <section class="hero" id="hero">
+          <div class="hero-shade"></div>
+          <div class="hero-in">
+            <h1 id="title">Ughelli Regional Choir End of Year Annual Wrap-Up</h1>
+            <p class="org" id="org">St. Cecilia Choir Warri Diocese, Ughelli Region</p>
+
+            <div class="pills">
+              <div class="pill"><span>Date</span><b id="date-line">Saturday, 12 December 2026</b></div>
+              <div class="pill"><span>Time</span><b id="time-line">10:00am</b></div>
+              <div class="pill"><span>Venue</span><b id="venue">Jaylayians Amusement Resort</b></div>
+              <div class="pill" id="area-pill" hidden><span>Area</span><b id="venue-area"></b></div>
+            </div>
+
+            <div class="cd-label">Starts in</div>
+            <div class="countdown" id="countdown">
+              <div class="cd"><b id="cd-d">00</b><span>Days</span></div>
+              <div class="cd"><b id="cd-h">00</b><span>Hours</span></div>
+              <div class="cd"><b id="cd-m">00</b><span>Mins</span></div>
+              <div class="cd"><b id="cd-s">00</b><span>Secs</span></div>
+            </div>
+            <p class="cd-done" id="cd-done" hidden></p>
+
+            <div class="hero-buy">
+              <a class="btn btn-pay" href="#tickets" id="hero-cta">Buy tickets</a>
+              <span class="hero-from">From <b id="from">₦8,000</b></span>
+            </div>
           </div>
-        </div>
+        </section>
 
-        <h1 id="title">Ughelli Regional Choir End of Year Annual Wrap-Up</h1>
-        <p class="org" id="org">St. Cecilia Choir Warri Diocese, Ughelli Region</p>
+        <section class="card">
+          <h2 class="label">What's on</h2>
+          <ul class="tags" id="highlights"></ul>
+        </section>
 
-        <div class="facts">
-          <div class="fact">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="3" /><path d="M3 9.5h18M8 2.5v4M16 2.5v4" /></svg>
-            <div><strong id="date-line">Saturday 12 December 2026</strong><span id="time-line">Starts 10:00am</span></div>
+        <section class="card">
+          <h2 class="label">About</h2>
+          <p class="about" id="about"></p>
+          <div class="contact">
+            <span id="contact-line">Questions? Call or WhatsApp 0806 625 5265</span>
+            <div class="contact-btns">
+              <a class="btn btn-ghost sm" id="wa-link" href="https://wa.me/2348066255265" target="_blank" rel="noopener">WhatsApp</a>
+              <a class="btn btn-ghost sm" id="call-link" href="tel:+2348066255265">Call</a>
+            </div>
           </div>
-          <div class="fact">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-5.6-7-11.2A7 7 0 0 1 19 9.8C19 15.4 12 21 12 21Z" /><circle cx="12" cy="10" r="2.6" /></svg>
-            <div><strong id="venue">Jaylayians Amusement Resort</strong><span id="venue-area"></span></div>
-          </div>
-        </div>
-
-        <div class="countdown" id="countdown" aria-live="off">
-          <div class="cd"><b id="cd-d">00</b><span>days</span></div>
-          <div class="cd"><b id="cd-h">00</b><span>hours</span></div>
-          <div class="cd"><b id="cd-m">00</b><span>mins</span></div>
-          <div class="cd"><b id="cd-s">00</b><span>secs</span></div>
-        </div>
-        <p class="cd-done" id="cd-done" hidden></p>
-
-        <svg class="wave-rule" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0 6c12.5-6 25-6 37.5 0S62.5 12 75 6s25-6 37.5 0 25 6 37.5 0 25-6 37.5 0 25 6 37.5 0 25-6 37.5 0 25 6 37.5 0 25-6 37.5 0 25 6 37.5 0 25-6 37.5 0 25 6 25 0" fill="none" stroke="currentColor" stroke-width="2" />
-        </svg>
-
-        <h2 class="sec">What's on</h2>
-        <ul class="chips" id="highlights"></ul>
-
-        <h2 class="sec">About the day</h2>
-        <p class="about" id="about"></p>
-
-        <div class="contact">
-          <div>
-            <strong>Questions?</strong>
-            <span id="contact-line">Call or WhatsApp 0806 625 5265</span>
-          </div>
-          <div class="contact-btns">
-            <a class="btn btn-soft" id="wa-link" href="https://wa.me/2348066255265" target="_blank" rel="noopener">WhatsApp</a>
-            <a class="btn btn-line" id="call-link" href="tel:+2348066255265">Call</a>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <aside class="ev-buy" id="tickets">
-        <div class="buy">
-          <div class="buy-head">
-            <h2>Tickets</h2>
-            <span class="from">From <b id="from">₦8,000</b></span>
-          </div>
+        <section class="card buy">
+          <h2 class="label">Tickets</h2>
+          <p class="keep">After paying, keep the page open for a few seconds while your QR tickets are created. They are also sent to your email.</p>
 
           <div class="msg msg-info closed" id="closed" hidden></div>
 
@@ -124,6 +88,8 @@
               <div class="sum-row"><span>Transaction fee</span><span id="fee">₦0</span></div>
               <div class="sum-row sum-total"><span>Total</span><b id="total">₦0</b></div>
             </div>
+
+            <h3 class="label sm-label">Your details</h3>
             <div class="field">
               <label for="f-name">Full name</label>
               <input class="input" id="f-name" name="name" autocomplete="name" required maxlength="80" />
@@ -136,16 +102,21 @@
               <label for="f-email">Email</label>
               <input class="input" id="f-email" name="email" type="email" inputmode="email" autocomplete="email" required />
             </div>
+
             <div class="guests" id="guests" hidden>
-              <h3>Who's coming?</h3>
-              <p class="guests-note">Optional. The name goes on each ticket. Leave a box empty to use your own name.</p>
+              <h3 class="label sm-label">Who's coming?</h3>
+              <p class="guests-note">Optional. Each name goes on its ticket. Leave a box empty to use your own name.</p>
               <div id="guest-fields"></div>
             </div>
+
             <div class="msg msg-error" id="err" hidden></div>
-            <button class="btn btn-primary btn-block pay" id="pay" type="submit" disabled>Choose your tickets</button>
-            <p class="fine">Secure payment by Paystack. Your QR tickets show on screen right after you pay, and you can find them again any time with your phone number.</p>
+            <button class="btn btn-pay btn-block pay" id="pay" type="submit" disabled>Choose your tickets</button>
+            <p class="secure">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+              Secured by Paystack
+            </p>
           </form>
-        </div>
+        </section>
       </aside>
     </main>
 
@@ -156,7 +127,7 @@
 
     <div class="mbar" id="mbar">
       <div class="mbar-txt"><small id="mbar-label">From</small><b id="mbar-amt">₦8,000</b></div>
-      <button class="btn btn-primary" id="mbar-btn" type="button">Get tickets</button>
+      <button class="btn btn-pay" id="mbar-btn" type="button">Get tickets</button>
     </div>
 
     <script type="module" src="/src/event.ts"></script>
