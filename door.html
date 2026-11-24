@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Door scanner · Ughelli Wrap-Up</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#0e2a30" />
+    <link rel="icon" href="/favicon-door.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Familjen+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body class="door">
+    <section id="v-login" class="d-login">
+      <h1>Door scanner</h1>
+      <p>Ughelli Wrap-Up 2026</p>
+      <form id="login-form" novalidate>
+        <div class="field">
+          <label for="pin">Door PIN</label>
+          <input class="input" id="pin" type="password" inputmode="numeric" autocomplete="off" required />
+        </div>
+        <div class="field">
+          <label for="usher">Your name</label>
+          <input class="input" id="usher" autocomplete="name" maxlength="40" placeholder="So we know who checked people in" />
+        </div>
+        <div class="msg msg-error" id="login-err" hidden></div>
+        <button class="btn btn-primary btn-block" id="login-btn" type="submit">Start scanning</button>
+      </form>
+    </section>
+
+    <section id="v-scan" class="d-scan" hidden>
+      <header class="d-top">
+        <div>
+          <b id="d-count">0 of 0 people in</b>
+          <small id="d-tcount">0 of 0 tickets</small>
+        </div>
+        <button class="d-out" id="logout" type="button">Sign out</button>
+      </header>
+
+      <div class="d-cam">
+        <video id="video" playsinline muted></video>
+        <div class="d-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="d-camnote" id="camnote">Starting camera</div>
+      </div>
+
+      <form class="d-manual" id="manual-form">
+        <input class="input" id="manual" placeholder="Or type the code, e.g. UGH-3FA9C21B7D" autocapitalize="characters" autocomplete="off" />
+        <button class="btn btn-primary" type="submit">Check</button>
+      </form>
+      <p class="d-last" id="last"></p>
+    </section>
+
+    <div class="d-result" id="result" hidden>
+      <div class="d-res-inner">
+        <div class="d-icon" id="r-icon"></div>
+        <div class="d-big" id="r-big"></div>
+        <div class="d-kind" id="r-kind"></div>
+        <div class="d-name" id="r-name"></div>
+        <div class="d-sub" id="r-sub"></div>
+        <button class="d-next" id="r-next" type="button">Scan next</button>
+      </div>
+    </div>
+
+    <canvas id="grab" hidden></canvas>
+    <script type="module" src="/src/door.ts"></script>
+  </body>
+</html>

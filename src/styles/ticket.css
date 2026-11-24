@@ -1,0 +1,333 @@
+.tp {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 8px 20px 24px;
+  min-height: 60vh;
+}
+
+.panel {
+  max-width: 480px;
+  margin: 24px auto 0;
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 28px 22px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line-soft);
+}
+
+.panel h1 {
+  font-size: 30px;
+  margin-bottom: 8px;
+}
+
+.center {
+  text-align: center;
+}
+
+.muted {
+  color: var(--ink-soft);
+  margin: 0 0 18px;
+}
+
+.small {
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+.row-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.steps {
+  list-style: none;
+  padding: 0;
+  margin: 22px auto;
+  display: grid;
+  gap: 12px;
+  max-width: 300px;
+  text-align: left;
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink-faint);
+  font-weight: 700;
+}
+
+.steps .dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2.5px solid var(--line);
+  flex: none;
+  position: relative;
+}
+
+.steps li.now {
+  color: var(--ink);
+}
+
+.steps li.now .dot {
+  border-color: var(--pool);
+  border-top-color: transparent;
+  animation: spin 0.9s linear infinite;
+}
+
+.steps li.done {
+  color: var(--ink);
+}
+
+.steps li.done .dot {
+  border-color: var(--leaf);
+  background: var(--leaf);
+}
+
+.steps li.done .dot::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+
+.tp-head {
+  display: grid;
+  gap: 14px;
+  margin: 12px 0 22px;
+}
+
+.tp-head h1 {
+  font-size: clamp(28px, 6vw, 40px);
+  margin-bottom: 6px;
+}
+
+.tp-head .muted {
+  margin: 0;
+}
+
+.tp-head .row-btns {
+  justify-content: flex-start;
+}
+
+.order-label {
+  font-family: var(--head);
+  font-weight: 700;
+  font-size: 18px;
+  margin: 26px 0 12px;
+  color: var(--ink-soft);
+}
+
+.tk-grid {
+  display: grid;
+  gap: 20px;
+}
+
+/* ---------- ticket card ---------- */
+.tk {
+  position: relative;
+  background: var(--surface);
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line-soft);
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.tk-band {
+  position: relative;
+  padding: 20px 22px 30px;
+  background: linear-gradient(135deg, var(--band), var(--band2));
+  color: var(--bandink);
+  overflow: hidden;
+}
+
+.tk-band::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6px;
+  height: 16px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8c10-8 20-8 30 0s20 8 30 0 20-8 20-8' fill='none' stroke='white' stroke-opacity='.3' stroke-width='2.5'/%3E%3C/svg%3E")
+    repeat-x;
+  background-size: 80px 16px;
+}
+
+.tk.vvip .tk-band::after {
+  filter: invert(1);
+  opacity: 0.4;
+}
+
+.tk-ev {
+  font-family: var(--head);
+  font-weight: 600;
+  font-size: 15px;
+  opacity: 0.95;
+  max-width: 30ch;
+}
+
+.tk-kind {
+  font-family: var(--head);
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1;
+  margin-top: 12px;
+}
+
+.tk-admits {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--chip);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tk-body {
+  padding: 18px 22px 8px;
+  display: grid;
+  gap: 12px;
+}
+
+.tk-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tk-row small {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.tk-row b {
+  font-size: 16px;
+}
+
+.tk-row .r {
+  text-align: right;
+  flex: none;
+}
+
+.tk-perf {
+  position: relative;
+  height: 28px;
+  margin: 6px 0;
+}
+
+.tk-perf::before {
+  content: '';
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  top: 50%;
+  border-top: 2px dashed var(--line);
+}
+
+.tk-perf::after {
+  content: '';
+  position: absolute;
+  inset: 0 -14px;
+  background: radial-gradient(circle at 0 50%, var(--bg) 13px, transparent 14px),
+    radial-gradient(circle at 100% 50%, var(--bg) 13px, transparent 14px);
+}
+
+.tk-qr {
+  padding: 4px 22px 18px;
+  text-align: center;
+}
+
+.tk-qrbox {
+  width: min(250px, 72vw);
+  margin: 0 auto;
+  padding: 14px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid var(--line-soft);
+}
+
+.tk-qrbox svg {
+  width: 100%;
+  height: auto;
+}
+
+.tk-code {
+  font-family: var(--head);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  margin-top: 12px;
+}
+
+.tk-hint {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+
+.tk-usedtag {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #e5f5ec;
+  color: var(--leaf);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.tk.used .tk-qrbox {
+  opacity: 0.35;
+}
+
+.tk-save {
+  display: flex;
+  width: calc(100% - 44px);
+  margin: 0 22px 22px;
+}
+
+.find {
+  margin-top: 28px;
+}
+
+.find-results {
+  margin-top: 8px;
+}
+
+@media (min-width: 760px) {
+  .tk-grid {
+    grid-template-columns: repeat(2, minmax(0, 420px));
+    justify-content: start;
+  }
+  .tk {
+    margin: 0;
+  }
+  .tp-head {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+}
+
+@media (min-width: 1140px) {
+  .tk-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

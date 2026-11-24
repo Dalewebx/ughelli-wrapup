@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>My tickets · Ughelli Wrap-Up 2026</title>
+    <meta name="description" content="View, save or find your e-tickets for the Ughelli Regional Choir End of Year Wrap-Up." />
+    <meta property="og:title" content="My tickets · Ughelli Wrap-Up 2026" />
+    <meta property="og:image" content="https://ughelli.sccwd.org/og.png" />
+    <meta name="theme-color" content="#f3f9f9" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Familjen+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" id="brand">SCCWD Ughelli Region</a>
+      <a class="toplink" href="/">Event page</a>
+    </header>
+
+    <main class="tp">
+      <section id="v-wait" class="panel center" hidden>
+        <h1>Finishing your tickets</h1>
+        <ol class="steps" id="steps">
+          <li data-s="0"><span class="dot"></span>Checking your payment</li>
+          <li data-s="1"><span class="dot"></span>Creating your QR tickets</li>
+          <li data-s="2"><span class="dot"></span>Ready</li>
+        </ol>
+        <p class="muted" id="wait-note">Please keep this page open. It only takes a few seconds.</p>
+      </section>
+
+      <section id="v-pending" class="panel center" hidden>
+        <h1>Payment not confirmed yet</h1>
+        <p class="muted" id="pending-note">If you were charged, your tickets will appear here once Paystack confirms. This page keeps checking.</p>
+        <div class="row-btns">
+          <button class="btn btn-primary" id="pending-retry" type="button">Check again</button>
+          <a class="btn btn-line" href="/">Back to tickets</a>
+        </div>
+        <p class="muted small" id="pending-help"></p>
+      </section>
+
+      <section id="v-tickets" hidden>
+        <div class="tp-head">
+          <div>
+            <h1 id="hello">You're in</h1>
+            <p class="muted" id="hello-sub">Show each QR at the gate. A table QR lets in all 4 people at once.</p>
+          </div>
+          <div class="row-btns">
+            <button class="btn btn-primary" id="save-all" type="button">Save all tickets</button>
+            <button class="btn btn-line" id="find-other" type="button">Find another ticket</button>
+          </div>
+        </div>
+        <div class="tk-grid" id="tk-grid"></div>
+      </section>
+
+      <section id="v-find" class="panel find" hidden>
+        <h1>Find my ticket</h1>
+        <p class="muted">Enter the phone number and first name you used when buying.</p>
+        <form id="find-form" novalidate>
+          <div class="field">
+            <label for="q-phone">Phone number</label>
+            <input class="input" id="q-phone" type="tel" inputmode="tel" autocomplete="tel" required />
+          </div>
+          <div class="field">
+            <label for="q-name">First name</label>
+            <input class="input" id="q-name" autocomplete="given-name" required />
+          </div>
+          <div class="msg msg-error" id="find-err" hidden></div>
+          <button class="btn btn-primary btn-block" id="find-btn" type="submit">Show my tickets</button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="site-foot">
+      <span>SCCWD Ughelli Region · End of Year Wrap-Up 2026</span>
+      <span id="help-line">Help: 0806 625 5265</span>
+    </footer>
+
+    <script type="module" src="/src/ticket.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs>
+<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22b8c4"/><stop offset=".5" stop-color="#0fa3b1"/><stop offset="1" stop-color="#0b8a97"/></linearGradient>
+<pattern id="t" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="1.5"/></pattern>
+<clipPath id="bc"><circle cx="0" cy="0" r="92"/></clipPath>
+</defs>
+<rect width="1200" height="630" fill="url(#g)"/>
+<rect width="1200" height="630" fill="url(#t)"/>
+<g fill="none" stroke="rgba(255,255,255,.3)" stroke-width="4" stroke-linecap="round">
+<path d="M0 470c60-26 120-26 180 0s120 26 180 0 120-26 180 0 120 26 180 0 120-26 180 0 120 26 180 0 120-26 180 0"/>
+<path d="M0 540c60-22 120-22 180 0s120 22 180 0 120-22 180 0 120 22 180 0 120-22 180 0 120 22 180 0 120-22 180 0" opacity=".6"/>
+</g>
+<rect x="0" y="575" width="1200" height="14" fill="#ffffff" opacity=".9"/>
+<g transform="translate(1020 190) rotate(-12)">
+<g clip-path="url(#bc)">
+<rect x="-100" y="-100" width="200" height="200" fill="#fff"/>
+<path d="M0 0 L0 -120 A120 120 0 0 1 104 -60 Z" fill="#ffc93c"/>
+<path d="M0 0 L104 60 A120 120 0 0 1 0 120 Z" fill="#ff7a59"/>
+<path d="M0 0 L-104 60 A120 120 0 0 1 -104 -60 Z" fill="#0a7a86"/>
+<circle r="18" fill="#fff"/>
+<ellipse cx="-32" cy="-44" rx="28" ry="15" fill="rgba(255,255,255,.55)"/>
+</g>
+</g>
+<text x="70" y="128" font-family="Familjen Grotesk SemiBold" font-size="34" fill="#ffffff">SCCWD Ughelli Region</text>
+<text x="70" y="236" font-family="Familjen Grotesk" font-weight="700" font-size="84" fill="#ffffff">End of Year</text>
+<text x="70" y="326" font-family="Familjen Grotesk" font-weight="700" font-size="84" fill="#ffffff">Annual Wrap-Up</text>
+<rect x="70" y="372" width="500" height="74" rx="37" fill="#ffc93c"/>
+<text x="102" y="421" font-family="Familjen Grotesk" font-weight="700" font-size="36" fill="#12343b">Sat 12 Dec 2026 · 10am</text>
+<text x="70" y="512" font-family="Atkinson Hyperlegible" font-weight="700" font-size="31" fill="#ffffff">Jaylayians Amusement Resort · Tickets from ₦8,000</text>
+</svg>

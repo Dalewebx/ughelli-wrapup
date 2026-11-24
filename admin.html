@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Admin · Ughelli Wrap-Up</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" href="/favicon-admin.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Familjen+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body class="adm">
+    <section id="v-login" class="a-login">
+      <h1>Wrap-Up admin</h1>
+      <form id="login-form" novalidate>
+        <div class="field">
+          <label for="pw">Admin password</label>
+          <input class="input" id="pw" type="password" autocomplete="current-password" required />
+        </div>
+        <div class="msg msg-error" id="login-err" hidden></div>
+        <button class="btn btn-primary btn-block" type="submit" id="login-btn">Sign in</button>
+      </form>
+    </section>
+
+    <div id="v-app" hidden>
+      <header class="a-top">
+        <div class="a-title">
+          <h1>Wrap-Up admin</h1>
+          <span class="pill" id="sales-pill">Sales closed</span>
+        </div>
+        <nav class="a-tabs" id="tabs">
+          <button type="button" data-tab="overview" class="on">Overview</button>
+          <button type="button" data-tab="buyers">Buyers</button>
+          <button type="button" data-tab="event">Event and prices</button>
+        </nav>
+        <div class="a-actions">
+          <button class="btn btn-line sm" id="refresh" type="button">Refresh</button>
+          <button class="btn btn-line sm" id="logout" type="button">Sign out</button>
+        </div>
+      </header>
+
+      <main class="a-main">
+        <section data-view="overview">
+          <div class="switches">
+            <div class="switch-card">
+              <div>
+                <b>Ticket sales</b>
+                <span id="sales-note">Buyers can't pay while this is off.</span>
+              </div>
+              <label class="toggle"><input type="checkbox" id="t-sales" /><i></i></label>
+            </div>
+            <div class="switch-card">
+              <div>
+                <b>₦100 test ticket</b>
+                <span>Shows only at <a href="/?test=1" target="_blank" rel="noopener">/?test=1</a>. Turn off after your test.</span>
+              </div>
+              <label class="toggle"><input type="checkbox" id="t-test" /><i></i></label>
+            </div>
+          </div>
+
+          <div class="stats" id="stats"></div>
+
+          <div class="cols">
+            <div class="card">
+              <h2>Sales by ticket type</h2>
+              <table class="tbl" id="by-type"></table>
+            </div>
+            <div class="card">
+              <h2>Door check-ins</h2>
+              <div id="checkins"></div>
+            </div>
+          </div>
+
+          <div class="card" id="test-card" hidden>
+            <h2>Test payments (left out of the totals above)</h2>
+            <div id="test-box"></div>
+          </div>
+
+          <div class="card links">
+            <h2>Links</h2>
+            <p>Public page: <a href="/" target="_blank" rel="noopener" id="l-public"></a></p>
+            <p>Door scanner for ushers: <a href="/door" target="_blank" rel="noopener" id="l-door"></a></p>
+            <p>Find my ticket: <a href="/ticket?find=1" target="_blank" rel="noopener" id="l-find"></a></p>
+          </div>
+        </section>
+
+        <section data-view="buyers" hidden>
+          <div class="buyers-bar">
+            <input class="input" id="search" placeholder="Search name, phone, email or code" />
+          </div>
+          <div class="chipset" id="filter">
+            <button type="button" data-f="paid" class="on">Paid</button>
+            <button type="button" data-f="pending">Not paid yet</button>
+            <button type="button" data-f="review">Needs review</button>
+            <button type="button" data-f="test">Test</button>
+            <button type="button" data-f="all">All</button>
+          </div>
+          <p class="muted" id="buyers-count"></p>
+          <div class="buyers" id="buyers"></div>
+        </section>
+
+        <section data-view="event" hidden>
+          <form class="card ev-form" id="ev-form" novalidate>
+            <div class="grid2">
+              <div class="field full"><label for="e-title">Event name</label><input class="input" id="e-title" /></div>
+              <div class="field full"><label for="e-organizer">Organised by</label><input class="input" id="e-organizer" /></div>
+              <div class="field"><label for="e-date">Date and start time (Nigeria time)</label><input class="input" id="e-date" type="datetime-local" /></div>
+              <div class="field"><label for="e-phone">Contact phone (WhatsApp and calls)</label><input class="input" id="e-phone" /></div>
+              <div class="field"><label for="e-venue">Venue</label><input class="input" id="e-venue" /></div>
+              <div class="field"><label for="e-area">Venue address or area (optional)</label><input class="input" id="e-area" /></div>
+              <div class="field full"><label for="e-about">About the day</label><textarea class="input" id="e-about" rows="5"></textarea></div>
+              <div class="field full"><label for="e-high">What's on (one per line)</label><textarea class="input" id="e-high" rows="7"></textarea></div>
+              <div class="field"><label for="e-pr">Regular price (₦, 1 person)</label><input class="input" id="e-pr" type="number" inputmode="numeric" min="100" step="100" /></div>
+              <div class="field"><label for="e-pv">VIP table price (₦, admits 4)</label><input class="input" id="e-pv" type="number" inputmode="numeric" min="100" step="100" /></div>
+              <div class="field"><label for="e-pvv">VVIP table price (₦, admits 4)</label><input class="input" id="e-pvv" type="number" inputmode="numeric" min="100" step="100" /></div>
+              <div class="field full"><label for="e-closed">Message shown when sales are closed</label><input class="input" id="e-closed" /></div>
+            </div>
+            <div class="msg" id="ev-msg" hidden></div>
+            <button class="btn btn-primary" type="submit" id="ev-save">Save changes</button>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" hidden></div>
+    <script type="module" src="/src/admin.ts"></script>
+  </body>
+</html>
