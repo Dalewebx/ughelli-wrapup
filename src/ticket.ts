@@ -15,6 +15,24 @@ let ev: EventBits = {
 let helpPhone = '0806 625 5265';
 let shown: Order[] = [];
 
+// Every paid order bought on this phone, so all of them show up together, no matter how long ago.
+function savedRefs(): string[] {
+  try {
+    const list = JSON.parse(store.get('ugh_refs') || '[]');
+    return Array.isArray(list) ? list.filter((r) => typeof r === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+function rememberRef(ref: string) {
+  const list = savedRefs().filter((r) => r !== ref);
+  list.unshift(ref);
+  store.set('ugh_refs', JSON.stringify(list.slice(0, 30)));
+}
+function forgetRef(ref: string) {
+  store.set('ugh_refs', JSON.stringify(savedRefs().filter((r) => r !== ref)));
+}
+
 const views = ['v-wait', 'v-pending', 'v-tickets', 'v-find'];
 function show(id: string) {
   views.forEach((v) => ($(v).hidden = v !== id));
@@ -109,7 +127,8 @@ async function waitForPayment(ref: string) {
         setStep(1);
         await new Promise((r) => setTimeout(r, 400));
         setStep(3);
-        store.set('ugh_last_ref', ref);
+        rememberRef(ref);
+        store.del('ugh_last_ref');
         await new Promise((r) => setTimeout(r, 350));
         await renderOrders([{ ref, name: res.order.name, tickets: res.tickets }]);
         return;
@@ -202,15 +221,33 @@ async function loadEvent() {
     return waitForPayment(ref);
   }
   if (p.get('find')) return show('v-find');
-  const last = store.get('ugh_last_ref');
-  if (last) {
+  // A payment started on this phone that may have been confirmed later by Paystack.
+  const pending = store.get('ugh_last_ref');
+  const refs = savedRefs();
+  if (pending && !refs.includes(pending)) refs.push(pending);
+  if (refs.length) {
     await eventLoad;
-    try {
-      const res = await api(`/api/verify?ref=${encodeURIComponent(last)}`);
-      if (res.status === 'paid') return renderOrders([{ ref: last, name: res.order.name, tickets: res.tickets }]);
-    } catch {
-      /* fall through */
-    }
+    const results = await Promise.all(
+      refs.map(async (r) => {
+        try {
+          const res = await api(`/api/verify?ref=${encodeURIComponent(r)}`);
+          if (res.status === 'paid') {
+            rememberRef(r);
+            if (r === pending) store.del('ugh_last_ref');
+            return { ref: r, name: res.order.name, tickets: res.tickets, paidAt: res.order.paid_at || '' } as Order & { paidAt: string };
+          }
+        } catch (e: any) {
+          if (e?.status === 404) {
+            forgetRef(r);
+            if (r === pending) store.del('ugh_last_ref');
+          }
+        }
+        return null;
+      }),
+    );
+    const paid = results.filter(Boolean) as (Order & { paidAt: string })[];
+    paid.sort((a, b) => (a.paidAt < b.paidAt ? 1 : -1));
+    if (paid.length) return renderOrders(paid);
   }
   show('v-find');
 })();
