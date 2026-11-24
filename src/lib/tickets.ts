@@ -23,7 +23,7 @@ export async function ticketCard(t: Ticket, holder: string, ev: EventBits, index
     <div class="tk-band">
       <div class="tk-ev">${esc(ev.title)}</div>
       <div class="tk-kind">${KIND_LABEL[t.kind]}</div>
-      <div class="tk-admits">Admits ${t.admits}</div>
+      <div class="tk-admits">${t.seat ? `Seat ${t.seat} of 4` : `Admits ${t.admits}`}</div>
     </div>
     <div class="tk-body">
       <div class="tk-row">
@@ -34,6 +34,7 @@ export async function ticketCard(t: Ticket, holder: string, ev: EventBits, index
         <div><small>Date</small><b>${fmtDate(ev.starts_at, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</b></div>
         <div class="r"><small>Time</small><b>${timeOf(ev.starts_at)}</b></div>
       </div>
+      ${t.table_name ? `<div class="tk-row"><div><small>Table</small><b>${esc(t.table_name)}</b></div></div>` : ''}
       <div class="tk-row"><div><small>Venue</small><b>${esc(ev.venue)}</b></div></div>
     </div>
     <div class="tk-perf" aria-hidden="true"></div>
@@ -122,7 +123,7 @@ export async function ticketPng(t: Ticket, holder: string, ev: EventBits, index:
   ctx.font = `700 92px ${head}`;
   ctx.fillText(KIND_LABEL[t.kind].toUpperCase(), X + 60, y + 78);
   ctx.font = `700 36px ${body}`;
-  const adm = `ADMITS ${t.admits}`;
+  const adm = t.seat ? `SEAT ${t.seat} OF 4` : `ADMITS ${t.admits}`;
   const aw = ctx.measureText(adm).width + 48;
   roundRect(ctx, X + 60, y + 108, aw, 62, 31);
   ctx.fillStyle = th.chip;
@@ -134,9 +135,11 @@ export async function ticketPng(t: Ticket, holder: string, ev: EventBits, index:
   const rows: [string, string, string?, string?][] = [
     ['NAME', holder, 'TICKET', `${index} of ${total}`],
     ['DATE', longDate(ev.starts_at), 'TIME', timeOf(ev.starts_at)],
+    ...(t.table_name ? ([['TABLE', t.table_name]] as [string, string][]) : []),
     ['VENUE', ev.venue],
   ];
-  y = 560;
+  y = 556;
+  const step = rows.length > 3 ? 92 : 112;
   for (const [l1, v1, l2, v2] of rows) {
     ctx.fillStyle = '#8d8a96';
     ctx.font = `700 24px ${body}`;
@@ -146,7 +149,7 @@ export async function ticketPng(t: Ticket, holder: string, ev: EventBits, index:
     ctx.font = `700 36px ${body}`;
     ctx.fillText(wrap(ctx, v1, l2 ? CW - 360 : CW - 120)[0], X + 60, y + 46);
     if (v2) ctx.fillText(v2, X + CW - 260, y + 46);
-    y += 112;
+    y += step;
   }
 
   // perforation

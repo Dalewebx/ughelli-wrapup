@@ -1,6 +1,6 @@
 import {
   Env, bad, json, readJson, getSettings, db, paystack, phoneDigits, randomRef,
-  SUBACCOUNT_DEFAULT, TEST_PRICE, MAX_PER_TYPE, withFee,
+  SUBACCOUNT_DEFAULT, TEST_PRICE, MAX_PER_TYPE, withFee, cleanNames,
 } from '../../server/lib';
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
@@ -36,12 +36,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const { fee, total: naira } = withFee(subtotal);
     const ref = randomRef();
 
-    // Optional name for each ticket. Blank means the buyer's name is used.
-    const guest_names: Record<string, string[]> = {};
-    for (const k of ['regular', 'vip', 'vvip', 'test'] as const) {
-      const list = Array.isArray(body.names?.[k]) ? body.names[k] : [];
-      guest_names[k] = Array.from({ length: items[k] }, (_, i) => String(list[i] ?? '').trim().replace(/\s+/g, ' ').slice(0, 60));
-    }
+    const guest_names = cleanNames(body.names, items);
 
     await db(env).insert('ugh_orders', {
       ref, name, phone, phone_digits: phoneDigits(phone), email, items, guest_names,

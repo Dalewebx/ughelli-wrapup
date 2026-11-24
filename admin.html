@@ -87,8 +87,37 @@
         </section>
 
         <section data-view="buyers" hidden>
+          <details class="card manual" id="manual">
+            <summary>Add tickets by hand (cash, transfer or free)</summary>
+            <form id="manual-form" novalidate>
+              <div class="grid2">
+                <div class="field"><label for="m-name">Buyer name</label><input class="input" id="m-name" /></div>
+                <div class="field"><label for="m-phone">Phone (WhatsApp)</label><input class="input" id="m-phone" type="tel" inputmode="tel" /></div>
+                <div class="field full"><label for="m-email">Email (optional, tickets are emailed if given)</label><input class="input" id="m-email" type="email" inputmode="email" /></div>
+              </div>
+              <div class="m-qty">
+                <div class="field"><label for="m-regular">Regular</label><input class="input" id="m-regular" type="number" inputmode="numeric" min="0" value="0" /></div>
+                <div class="field"><label for="m-vip">VIP tables</label><input class="input" id="m-vip" type="number" inputmode="numeric" min="0" value="0" /></div>
+                <div class="field"><label for="m-vvip">VVIP tables</label><input class="input" id="m-vvip" type="number" inputmode="numeric" min="0" value="0" /></div>
+              </div>
+              <div class="field">
+                <label>How they paid</label>
+                <div class="chipset" id="m-method">
+                  <button type="button" data-m="cash" class="on">Cash</button>
+                  <button type="button" data-m="transfer">Bank transfer</button>
+                  <button type="button" data-m="free">Free (guest)</button>
+                </div>
+              </div>
+              <p class="muted small-note" id="m-total">Total: ₦0</p>
+              <div class="msg msg-error" id="m-err" hidden></div>
+              <button class="btn btn-primary" type="submit" id="m-btn">Create tickets</button>
+              <div class="m-done" id="m-done" hidden></div>
+            </form>
+          </details>
+
           <div class="buyers-bar">
             <input class="input" id="search" placeholder="Search name, phone, email or code" />
+            <button class="btn btn-line sm" id="csv" type="button">Download list</button>
           </div>
           <div class="chipset" id="filter">
             <button type="button" data-f="paid" class="on">Paid</button>
@@ -104,7 +133,8 @@
         <section data-view="event" hidden>
           <form class="card ev-form" id="ev-form" novalidate>
             <div class="grid2">
-              <div class="field full"><label for="e-title">Event name</label><input class="input" id="e-title" /></div>
+              <div class="field full"><label for="e-short">Headline on the photo</label><input class="input" id="e-short" /></div>
+              <div class="field full"><label for="e-title">Full event name (used on tickets, emails and the browser tab)</label><input class="input" id="e-title" /></div>
               <div class="field full"><label for="e-organizer">Organised by</label><input class="input" id="e-organizer" /></div>
               <div class="field"><label for="e-date">Date and start time (Nigeria time)</label><input class="input" id="e-date" type="datetime-local" /></div>
               <div class="field"><label for="e-phone">Contact phone (WhatsApp and calls)</label><input class="input" id="e-phone" /></div>
@@ -116,6 +146,7 @@
               <div class="field"><label for="e-pv">VIP table price (₦, admits 4)</label><input class="input" id="e-pv" type="number" inputmode="numeric" min="100" step="100" /></div>
               <div class="field"><label for="e-pvv">VVIP table price (₦, admits 4)</label><input class="input" id="e-pvv" type="number" inputmode="numeric" min="100" step="100" /></div>
               <div class="field full"><label for="e-closed">Message shown when sales are closed</label><input class="input" id="e-closed" /></div>
+              <div class="field"><label for="e-pin">Door PIN for ushers</label><input class="input" id="e-pin" inputmode="numeric" autocomplete="off" /></div>
             </div>
             <div class="msg" id="ev-msg" hidden></div>
             <button class="btn btn-primary" type="submit" id="ev-save">Save changes</button>

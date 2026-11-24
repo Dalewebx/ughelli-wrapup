@@ -112,6 +112,7 @@ export async function getSettings(env: Env): Promise<any> {
 export function publicSettings(s: any) {
   return {
     title: s.title,
+    short_title: s.short_title || s.title,
     organizer: s.organizer,
     about: s.about,
     venue: s.venue,
@@ -214,7 +215,7 @@ export async function sendTicketEmail(env: Env, ref: string, force = false) {
   if (!order || order.status !== 'paid' || (order.email_sent_at && !force)) return;
   const tickets: any[] = await d.get(
     'ugh_tickets',
-    `order_ref=eq.${encodeURIComponent(ref)}&select=code,kind,admits,guest_name&order=kind.asc,seq.asc`,
+    `order_ref=eq.${encodeURIComponent(ref)}&select=code,kind,admits,guest_name,seat,table_name&order=kind.asc,seq.asc`,
   );
   const s = await getSettings(env);
   const site = (env.SITE_URL || 'https://ughelli.sccwd.org').replace(/\/+$/, '');
@@ -226,24 +227,24 @@ export async function sendTicketEmail(env: Env, ref: string, force = false) {
   const rows = tickets
     .map(
       (t) => `<tr>
-        <td style="padding:12px 0;border-bottom:1px solid #e7f1f2;font:700 15px Arial,sans-serif;color:#12343b">${LABEL[t.kind] || t.kind}<br><span style="font:400 14px Arial,sans-serif;color:#4b6b71">${escHtml(t.guest_name || order.name)} &middot; admits ${t.admits}</span></td>
-        <td style="padding:12px 0;border-bottom:1px solid #e7f1f2;font:700 14px 'Courier New',monospace;color:#12343b;text-align:right">${t.code}</td>
+        <td style="padding:12px 0;border-bottom:1px solid #ecebf1;font:700 15px Arial,sans-serif;color:#15131a">${LABEL[t.kind] || t.kind}<br><span style="font:400 14px Arial,sans-serif;color:#5d5a66">${escHtml(t.guest_name || order.name)} &middot; ${t.seat ? `seat ${t.seat} of 4${t.table_name ? ', ' + escHtml(t.table_name) : ''}` : `admits ${t.admits}`}</span></td>
+        <td style="padding:12px 0;border-bottom:1px solid #ecebf1;font:700 14px 'Courier New',monospace;color:#15131a;text-align:right">${t.code}</td>
       </tr>`,
     )
     .join('');
-  const html = `<!doctype html><html><body style="margin:0;background:#f3f9f9;padding:24px 12px">
+  const html = `<!doctype html><html><body style="margin:0;background:#f3f2f7;padding:24px 12px">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:18px;overflow:hidden">
-    <tr><td style="background:#0fa3b1;padding:26px 26px 22px;font:700 22px Arial,sans-serif;color:#ffffff">${escHtml(s.title)}</td></tr>
-    <tr><td style="padding:24px 26px 8px;font:400 16px/1.55 Arial,sans-serif;color:#12343b">
+    <tr><td style="background:#15131a;padding:26px 26px 22px;font:700 22px Arial,sans-serif;color:#ffffff">${escHtml(s.title)}</td></tr>
+    <tr><td style="padding:24px 26px 8px;font:400 16px/1.55 Arial,sans-serif;color:#15131a">
       Hi ${escHtml(first)}, your payment went through and your tickets are ready.<br><br>
       <b>${escHtml(when)}</b><br>${escHtml(s.venue)}${s.venue_area ? ', ' + escHtml(s.venue_area) : ''}
     </td></tr>
     <tr><td style="padding:8px 26px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table></td></tr>
     <tr><td style="padding:22px 26px 8px" align="center">
-      <a href="${link}" style="display:inline-block;background:#0a7a86;color:#ffffff;text-decoration:none;font:700 16px Arial,sans-serif;padding:15px 28px;border-radius:12px">Open my QR tickets</a>
+      <a href="${link}" style="display:inline-block;background:#ff7a1a;color:#15131a;text-decoration:none;font:700 16px Arial,sans-serif;padding:15px 28px;border-radius:12px">Open my QR tickets</a>
     </td></tr>
-    <tr><td style="padding:12px 26px 26px;font:400 14px/1.5 Arial,sans-serif;color:#4b6b71" align="center">
-      Show the QR at the gate. Each code works once, and a table QR lets in all 4 people.<br>
+    <tr><td style="padding:12px 26px 26px;font:400 14px/1.5 Arial,sans-serif;color:#5d5a66" align="center">
+      Show the QR at the gate. Each code works once. Tables get a QR for each seat, so send each guest their own.<br>
       Lost this email? Use Find my ticket on ${escHtml(site.replace(/^https?:\/\//, ''))} with your phone number.<br>
       Help: ${escHtml(s.contact_phone)}
     </td></tr>
@@ -266,7 +267,7 @@ export async function sendTicketEmail(env: Env, ref: string, force = false) {
 export async function ticketsFor(env: Env, ref: string) {
   return db(env).get(
     'ugh_tickets',
-    `order_ref=eq.${encodeURIComponent(ref)}&select=code,kind,admits,seq,guest_name,checked_in_at&order=kind.asc,seq.asc`,
+    `order_ref=eq.${encodeURIComponent(ref)}&select=${TICKET_FIELDS}&order=kind.asc,seq.asc`,
   );
 }
 
@@ -274,6 +275,36 @@ export function isAdmin(request: Request, env: Env): boolean {
   return safeEqual(request.headers.get('x-admin-key') || '', env.ADMIN_PASSWORD || '');
 }
 
-export function isDoor(pin: string, env: Env): boolean {
-  return safeEqual(pin || '', env.DOOR_PIN || '') || safeEqual(pin || '', env.ADMIN_PASSWORD || '');
+// Door PIN: the one set in admin wins; otherwise the DOOR_PIN env var. The admin password always works.
+export async function isDoor(pin: string, env: Env): Promise<boolean> {
+  if (!pin) return false;
+  if (safeEqual(pin, env.ADMIN_PASSWORD || '')) return true;
+  let adminPin = '';
+  try {
+    adminPin = String((await getSettings(env)).door_pin || '');
+  } catch {
+    /* fall back to env */
+  }
+  return adminPin ? safeEqual(pin, adminPin) : safeEqual(pin, env.DOOR_PIN || '');
+}
+
+export const TICKET_FIELDS = 'code,kind,admits,seq,guest_name,table_no,seat,table_name,checked_in_at';
+
+// Cleans the optional names sent from checkout or admin.
+export function cleanNames(raw: any, items: Record<string, number>) {
+  const str = (v: unknown) => String(v ?? '').trim().replace(/\s+/g, ' ').slice(0, 60);
+  const out: Record<string, any[]> = {};
+  for (const k of ['regular', 'test']) {
+    const list = Array.isArray(raw?.[k]) ? raw[k] : [];
+    out[k] = Array.from({ length: items[k] || 0 }, (_, i) => str(list[i]));
+  }
+  for (const k of ['vip', 'vvip']) {
+    const list = Array.isArray(raw?.[k]) ? raw[k] : [];
+    out[k] = Array.from({ length: items[k] || 0 }, (_, i) => {
+      const t = list[i] || {};
+      const seats = Array.isArray(t.seats) ? t.seats : [];
+      return { name: str(t.name), seats: [0, 1, 2, 3].map((j) => str(seats[j])) };
+    });
+  }
+  return out;
 }

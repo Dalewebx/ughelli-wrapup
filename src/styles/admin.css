@@ -241,6 +241,14 @@ body.adm {
   border-bottom: 1px solid var(--line-soft);
 }
 
+.a-title h1,
+.card h2,
+.switch-card b,
+.a-login h1 {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .tbl th {
   color: var(--ink-faint);
   font-size: 13px;
@@ -290,8 +298,68 @@ body.adm {
   word-break: break-all;
 }
 
+.buyers-bar .btn {
+  white-space: nowrap;
+}
+
 .buyers-bar {
+  display: flex;
+  gap: 8px;
   margin-bottom: 10px;
+}
+
+.manual summary {
+  cursor: pointer;
+  font-family: var(--head);
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.manual[open] summary {
+  margin-bottom: 14px;
+}
+
+.m-qty {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0 10px;
+}
+
+.small-note {
+  margin: 4px 0 12px;
+}
+
+.m-done {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #e7f6ee;
+  color: #135c36;
+  display: grid;
+  gap: 10px;
+}
+
+.m-done .b-actions {
+  margin-top: 0;
+}
+
+.edit-grid {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.edit-grid .input {
+  padding: 9px 12px;
+  font-size: 15px;
+}
+
+.edit-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .chipset {

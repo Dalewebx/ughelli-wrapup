@@ -37,6 +37,8 @@
         </div>
         <button class="d-out" id="logout" type="button">Sign out</button>
       </header>
+      <div class="d-status" id="d-status"><i></i><span>Online</span></div>
+      <div class="d-conflict" id="d-conflict" hidden></div>
 
       <div class="d-cam">
         <video id="video" playsinline muted></video>
@@ -45,7 +47,7 @@
       </div>
 
       <form class="d-manual" id="manual-form">
-        <input class="input" id="manual" placeholder="Or type the code, e.g. UGH-3FA9C21B7D" autocapitalize="characters" autocomplete="off" />
+        <input class="input" id="manual" placeholder="Or type the code on the ticket" autocapitalize="characters" autocomplete="off" />
         <button class="btn btn-primary" type="submit">Check</button>
       </form>
       <p class="d-last" id="last"></p>

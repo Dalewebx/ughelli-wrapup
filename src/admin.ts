@@ -108,6 +108,7 @@ function renderAll() {
   renderOverview();
   renderBuyers();
   fillForm();
+  manualTotal();
 }
 
 function renderSwitches() {
@@ -137,24 +138,48 @@ $('t-sales').addEventListener('change', (e) => saveSwitch('sales_open', e.target
 $('t-test').addEventListener('change', (e) => saveSwitch('test_mode', e.target as HTMLInputElement));
 
 // ---------- overview ----------
+function isManual(o: Order) {
+  return o.channel === 'cash' || o.channel === 'transfer' || o.channel === 'free';
+}
+
+function tableStats(list: Order[]) {
+  const tables = new Map<string, boolean>();
+  for (const o of list)
+    for (const t of o.ugh_tickets) {
+      if (t.kind !== 'vip' && t.kind !== 'vvip') continue;
+      const key = t.seat ? `${o.ref}-${t.kind}-${t.table_no}` : t.code;
+      tables.set(key, (tables.get(key) || false) || !!t.checked_in_at);
+    }
+  return { total: tables.size, arrived: [...tables.values()].filter(Boolean).length };
+}
+
+function ticketLabel(t: Ticket) {
+  return `${KIND_LABEL[t.kind]}${t.seat ? `, seat ${t.seat} of 4` : t.admits > 1 ? ` (admits ${t.admits})` : ''}`;
+}
+
 function sum(list: Order[], f: (o: Order) => number) {
   return list.reduce((s, o) => s + (f(o) || 0), 0);
 }
 
 function renderOverview() {
   const paid = orders.filter((o) => o.status === 'paid' && !o.is_test);
-  const gross = sum(paid, (o) => o.amount);
-  const ticketSales = sum(paid, (o) => o.ticket_total ?? o.amount);
-  const buyerFees = sum(paid, (o) => o.buyer_fee ?? 0);
-  const fees = sum(paid, (o) => o.paystack_fee ?? 0);
-  const settle = sum(paid, (o) => o.subaccount_share ?? o.amount - (o.paystack_fee ?? 0));
+  const online = paid.filter((o) => !isManual(o));
+  const byHand = paid.filter((o) => isManual(o) && o.channel !== 'free');
+  const free = paid.filter((o) => o.channel === 'free');
+  const gross = sum(online, (o) => o.amount);
+  const onlineSales = sum(online, (o) => o.ticket_total ?? o.amount);
+  const handSales = sum(byHand, (o) => o.amount);
+  const ticketSales = onlineSales + handSales;
+  const buyerFees = sum(online, (o) => o.buyer_fee ?? 0);
+  const fees = sum(online, (o) => o.paystack_fee ?? 0);
+  const settle = sum(online, (o) => o.subaccount_share ?? o.amount - (o.paystack_fee ?? 0));
   const tickets = paid.flatMap((o) => o.ugh_tickets);
   const people = tickets.reduce((s, t) => s + t.admits, 0);
 
   $('stats').innerHTML = [
-    ['Ticket sales', nairaKobo(ticketSales), `${paid.length} order${paid.length === 1 ? '' : 's'} · buyers paid ${nairaKobo(gross)} with fees`, 'hero'],
+    ['Ticket sales', nairaKobo(ticketSales), `Online ${nairaKobo(onlineSales)} · by hand ${nairaKobo(handSales)}${free.length ? ` · ${free.length} free order${free.length === 1 ? '' : 's'}` : ''}`, 'hero'],
     ['Paystack fees', nairaKobo(fees), `Buyers covered ${nairaKobo(buyerFees)} of it`, ''],
-    ['Settles to region', nairaKobo(settle), 'Into the region subaccount', ''],
+    ['Settles to region', nairaKobo(settle), `Online sales into the subaccount (buyers paid ${nairaKobo(gross)})`, ''],
     ['Guests', String(people), `${tickets.length} ticket${tickets.length === 1 ? '' : 's'}`, ''],
   ]
     .map(([l, v, s, c]) => `<div class="stat ${c}"><small>${l}</small><b>${v}</b><span>${s}</span></div>`)
@@ -164,7 +189,7 @@ function renderOverview() {
   const rows = kinds.map((k) => {
     const count = sum(paid, (o) => o.items[k] || 0);
     const price = settings[`price_${k}`];
-    const rev = paid.reduce((s, o) => s + (o.items[k] || 0), 0) * price;
+    const rev = paid.filter((o) => o.channel !== 'free').reduce((s, o) => s + (o.items[k] || 0), 0) * price;
     return { k, count, people: count * (k === 'regular' ? 1 : 4), rev };
   });
   $('by-type').innerHTML =
@@ -180,7 +205,7 @@ function renderOverview() {
     <div class="kv"><span>People in</span><b>${inP} of ${people}</b></div>
     <div class="bar"><i style="width:${pct}%"></i></div>
     <div class="kv"><span>Tickets scanned</span><b>${inT.length} of ${tickets.length}</b></div>
-    <div class="kv"><span>Tables arrived</span><b>${inT.filter((t) => t.kind !== 'regular').length} of ${tickets.filter((t) => t.kind !== 'regular').length}</b></div>
+    <div class="kv"><span>Tables with someone in</span><b>${tableStats(paid).arrived} of ${tableStats(paid).total}</b></div>
     <div class="kv"><span>Last scan</span><b>${lastIn ? fmtDate(lastIn, { hour: 'numeric', minute: '2-digit', day: 'numeric', month: 'short' }) : 'None yet'}</b></div>`;
 
   const tests = orders.filter((o) => o.is_test && o.status === 'paid');
@@ -240,7 +265,8 @@ function renderBuyers() {
     .map((o) => {
       const link = `${location.origin}/ticket?ref=${o.ref}`;
       const msg = `Hello ${o.name.split(' ')[0]}, here are your Ughelli Wrap-Up e-tickets: ${link}`;
-      const stText = o.status === 'paid' ? 'Paid' : o.status === 'review' ? 'Needs review' : 'Not paid';
+      const stText =
+        o.status === 'paid' ? (o.channel === 'free' ? 'Free' : isManual(o) ? `Paid (${o.channel})` : 'Paid') : o.status === 'review' ? 'Needs review' : 'Not paid';
       return `
       <details class="buyer">
         <summary>
@@ -263,7 +289,7 @@ function renderBuyers() {
           <div class="b-tix">
             ${o.ugh_tickets
               .map(
-                (t) => `<div class="b-tk"><span><code>${t.code}</code> · ${KIND_LABEL[t.kind]}${t.admits > 1 ? ` (admits ${t.admits})` : ''}${t.guest_name ? ` · ${esc(t.guest_name)}` : ''}</span>
+                (t) => `<div class="b-tk"><span><code>${t.code}</code> · ${ticketLabel(t)}${t.table_name ? ` · ${esc(t.table_name)}` : ''}${t.guest_name ? ` · ${esc(t.guest_name)}` : ''}</span>
                 ${t.checked_in_at ? `<span><span class="in">In ${fmtDate(t.checked_in_at, { hour: 'numeric', minute: '2-digit' })}${t.checked_in_by ? ` by ${esc(t.checked_in_by)}` : ''}</span> <button class="linkbtn" data-undo="${t.code}" type="button">Undo</button></span>` : '<span class="muted">Not in yet</span>'}</div>`,
               )
               .join('')}
@@ -272,7 +298,18 @@ function renderBuyers() {
             ${o.status !== 'paid' ? `<button class="btn btn-primary sm" type="button" data-recheck="${o.ref}">Recheck with Paystack</button>` : ''}
             ${o.status === 'paid' ? `<a class="btn btn-soft sm" target="_blank" rel="noopener" href="https://wa.me/${waNumber(o.phone)}?text=${encodeURIComponent(msg)}">Send tickets on WhatsApp</a>
             <button class="btn btn-line sm" type="button" data-copy="${link}">Copy ticket link</button>
-            ${emailReady ? `<button class="btn btn-line sm" type="button" data-email="${o.ref}">Resend email</button>` : ''}` : ''}
+            ${emailReady && o.email ? `<button class="btn btn-line sm" type="button" data-email="${o.ref}">Resend email</button>` : ''}
+            <button class="btn btn-line sm" type="button" data-edit="${o.ref}">Edit names</button>` : ''}
+          </div>
+          <div class="edit-grid" data-editbox="${o.ref}" hidden>
+            <div class="edit-row"><input class="input" data-f="name" value="${esc(o.name)}" placeholder="Buyer name" /><input class="input" data-f="phone" value="${esc(o.phone)}" placeholder="Phone" /></div>
+            <input class="input" data-f="email" value="${esc(o.email)}" placeholder="Email" />
+            ${o.ugh_tickets
+              .map(
+                (t) => `<div class="edit-row"><input class="input" data-code="${t.code}" data-tf="guest_name" value="${esc(t.guest_name || '')}" placeholder="${esc(ticketLabel(t))}: name" />${t.seat ? `<input class="input" data-code="${t.code}" data-tf="table_name" value="${esc(t.table_name || '')}" placeholder="Table name" />` : '<span></span>'}</div>`,
+              )
+              .join('')}
+            <div class="b-actions"><button class="btn btn-primary sm" type="button" data-save="${o.ref}">Save changes</button></div>
           </div>
         </div>
       </details>`;
@@ -286,6 +323,38 @@ $('buyers').addEventListener('click', async (e) => {
   const undo = el.closest('[data-undo]') as HTMLButtonElement | null;
   const copy = el.closest('[data-copy]') as HTMLButtonElement | null;
   const mail = el.closest('[data-email]') as HTMLButtonElement | null;
+  const edit = el.closest('[data-edit]') as HTMLButtonElement | null;
+  const save = el.closest('[data-save]') as HTMLButtonElement | null;
+  if (edit) {
+    const box = document.querySelector(`[data-editbox="${edit.dataset.edit}"]`) as HTMLElement;
+    box.hidden = !box.hidden;
+  }
+  if (save) {
+    const ref = save.dataset.save!;
+    const box = document.querySelector(`[data-editbox="${ref}"]`) as HTMLElement;
+    const f = (k: string) => (box.querySelector(`[data-f="${k}"]`) as HTMLInputElement).value;
+    save.disabled = true;
+    try {
+      await call({ action: 'edit_order', ref, name: f('name'), phone: f('phone'), email: f('email') });
+      const byCode = new Map<string, any>();
+      box.querySelectorAll<HTMLInputElement>('[data-code]').forEach((inp) => {
+        const row = byCode.get(inp.dataset.code!) || { code: inp.dataset.code };
+        row[inp.dataset.tf!] = inp.value;
+        byCode.set(inp.dataset.code!, row);
+      });
+      const order = orders.find((o) => o.ref === ref)!;
+      for (const row of byCode.values()) {
+        const t = order.ugh_tickets.find((x) => x.code === row.code)!;
+        if ((row.guest_name ?? '') !== (t.guest_name || '') || ('table_name' in row && row.table_name !== (t.table_name || '')))
+          await call({ action: 'edit_ticket', ...row });
+      }
+      toast('Saved');
+      await load();
+    } catch (ex: any) {
+      toast(ex.message);
+      save.disabled = false;
+    }
+  }
   if (mail) {
     mail.disabled = true;
     try {
@@ -338,6 +407,8 @@ function toLocalInput(iso: string) {
 function fillForm() {
   const s = settings;
   $<HTMLInputElement>('e-title').value = s.title;
+  $<HTMLInputElement>('e-short').value = s.short_title || '';
+  $<HTMLInputElement>('e-pin').value = s.door_pin || '';
   $<HTMLInputElement>('e-organizer').value = s.organizer;
   $<HTMLInputElement>('e-date').value = toLocalInput(s.starts_at);
   $<HTMLInputElement>('e-phone').value = s.contact_phone;
@@ -359,6 +430,8 @@ $('ev-form').addEventListener('submit', async (e) => {
   const date = v('e-date');
   const patch = {
     title: v('e-title').trim(),
+    short_title: v('e-short').trim(),
+    door_pin: v('e-pin').trim(),
     organizer: v('e-organizer').trim(),
     starts_at: date ? `${date}:00+01:00` : settings.starts_at,
     contact_phone: v('e-phone').trim(),
@@ -391,6 +464,91 @@ $('ev-form').addEventListener('submit', async (e) => {
   } finally {
     btn.disabled = false;
   }
+});
+
+// ---------- add tickets by hand ----------
+let method = 'cash';
+$('m-method').addEventListener('click', (e) => {
+  const b = (e.target as HTMLElement).closest('button[data-m]') as HTMLElement | null;
+  if (!b) return;
+  method = b.dataset.m!;
+  document.querySelectorAll('#m-method button').forEach((x) => x.classList.toggle('on', x === b));
+  manualTotal();
+});
+function mq(id: string) {
+  return Math.max(0, Math.floor(Number($<HTMLInputElement>(id).value) || 0));
+}
+function manualTotal() {
+  if (!settings) return;
+  const face = mq('m-regular') * settings.price_regular + mq('m-vip') * settings.price_vip + mq('m-vvip') * settings.price_vvip;
+  $('m-total').textContent = method === 'free' ? `Free tickets (worth ${naira(face)}), not counted as sales` : `Total to collect: ${naira(face)}`;
+}
+['m-regular', 'm-vip', 'm-vvip'].forEach((id) => $(id).addEventListener('input', manualTotal));
+
+$('manual-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = $('m-err');
+  err.hidden = true;
+  const btn = $<HTMLButtonElement>('m-btn');
+  btn.disabled = true;
+  try {
+    const name = $<HTMLInputElement>('m-name').value;
+    const phone = $<HTMLInputElement>('m-phone').value;
+    const res = await call({
+      action: 'manual_order',
+      name,
+      phone,
+      email: $<HTMLInputElement>('m-email').value,
+      method,
+      items: { regular: mq('m-regular'), vip: mq('m-vip'), vvip: mq('m-vvip') },
+    });
+    const link = `${location.origin}/ticket?ref=${res.ref}`;
+    const msg = `Hello ${name.trim().split(' ')[0]}, here are your Ughelli Wrap-Up e-tickets: ${link}`;
+    const done = $('m-done');
+    done.innerHTML = `<b>Tickets created for ${esc(name)}.</b><span>Send them the link so they can save their QR tickets.</span>
+      <div class="b-actions"><a class="btn btn-primary sm" target="_blank" rel="noopener" href="https://wa.me/${waNumber(phone)}?text=${encodeURIComponent(msg)}">Send on WhatsApp</a>
+      <a class="btn btn-line sm" target="_blank" rel="noopener" href="${link}">Open tickets</a></div>`;
+    done.hidden = false;
+    (e.target as HTMLFormElement).reset();
+    manualTotal();
+    await load();
+  } catch (ex: any) {
+    err.textContent = ex.message;
+    err.hidden = false;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ---------- download list ----------
+$('csv').addEventListener('click', () => {
+  const rows = [['Ticket code', 'Type', 'Seat', 'Table', 'Name on ticket', 'Buyer', 'Phone', 'Email', 'Payment', 'Paid at', 'Checked in at', 'Checked in by']];
+  for (const o of orders) {
+    if (o.status !== 'paid') continue;
+    for (const t of o.ugh_tickets) {
+      rows.push([
+        t.code,
+        KIND_LABEL[t.kind],
+        t.seat ? `${t.seat} of 4` : '',
+        t.table_name || '',
+        t.guest_name || o.name,
+        o.name,
+        o.phone,
+        o.email,
+        o.is_test ? 'test' : o.channel === 'free' ? 'free' : isManual(o) ? o.channel || '' : 'online',
+        o.paid_at ? fmtDate(o.paid_at, { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '',
+        t.checked_in_at ? fmtDate(t.checked_in_at, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '',
+        t.checked_in_by || '',
+      ]);
+    }
+  }
+  const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ughelli-wrapup-tickets.csv';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 });
 
 // ---------- boot ----------

@@ -2,6 +2,7 @@ export type Kind = 'regular' | 'vip' | 'vvip' | 'test';
 
 export type EventInfo = {
   title: string;
+  short_title?: string;
   organizer: string;
   about: string;
   venue: string;
@@ -22,6 +23,9 @@ export type Ticket = {
   admits: number;
   seq: number;
   guest_name?: string | null;
+  table_no?: number | null;
+  seat?: number | null;
+  table_name?: string | null;
   checked_in_at: string | null;
   checked_in_by?: string | null;
   order_ref?: string;
@@ -36,8 +40,8 @@ export const KIND_LABEL: Record<Kind, string> = {
 
 export const KIND_NOTE: Record<Kind, string> = {
   regular: '1 person',
-  vip: 'Table for 4, one QR',
-  vvip: 'Table for 4, one QR',
+  vip: 'Table for 4, a QR for each seat',
+  vvip: 'Table for 4, a QR for each seat',
   test: 'Admin payment test only',
 };
 

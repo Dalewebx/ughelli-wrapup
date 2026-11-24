@@ -241,3 +241,33 @@ body.door {
   font-weight: 700;
   font-size: 18px;
 }
+
+.d-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 2px 12px;
+  font-size: 13.5px;
+  color: #a5a2ad;
+}
+
+.d-status i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--leaf);
+  flex: none;
+}
+
+.d-status.off i {
+  background: #e08a00;
+}
+
+.d-conflict {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(217, 63, 68, 0.15);
+  color: #ffb3b5;
+  font-size: 14px;
+}

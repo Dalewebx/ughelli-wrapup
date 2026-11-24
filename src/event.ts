@@ -40,7 +40,7 @@ function canBuy(k: Kind): boolean {
 
 function renderInfo() {
   document.title = `${info.title} · ${fmtDate(info.starts_at, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}`;
-  $('title').textContent = info.title;
+  $('title').textContent = info.short_title || info.title;
   $('org').textContent = info.organizer;
   $('date-line').textContent = longDate(info.starts_at);
   $('time-line').textContent = timeOf(info.starts_at);
@@ -73,15 +73,15 @@ function renderStubs() {
       (k) => `
       <div class="stub ${k}" data-k="${k}">
         <div class="stub-main">
-          <div class="stub-name"><span>${KIND_LABEL[k]}</span>${k === 'vip' || k === 'vvip' ? '<span class="stub-badge">Admits 4</span>' : ''}</div>
+          <div class="stub-name"><span>${KIND_LABEL[k]}</span>${k === 'vip' || k === 'vvip' ? '<span class="stub-badge">4 seats</span>' : ''}</div>
           <div class="stub-note">${KIND_NOTE[k]}</div>
           <div class="stub-price">${naira(info.prices[k])}</div>
         </div>
         <div class="stub-side">
           <div class="step">
-            <button type="button" data-d="-1" aria-label="Remove one ${KIND_LABEL[k]}">&minus;</button>
+            <button type="button" class="minus" data-d="-1" aria-label="Remove one ${KIND_LABEL[k]}"></button>
             <output aria-live="polite">0</output>
-            <button type="button" data-d="1" aria-label="Add one ${KIND_LABEL[k]}">+</button>
+            <button type="button" class="plus" data-d="1" aria-label="Add one ${KIND_LABEL[k]}"></button>
           </div>
         </div>
       </div>`,
@@ -125,27 +125,43 @@ function syncStubs() {
   $('mbar-btn').textContent = count ? 'Checkout' : 'Get tickets';
 }
 
+type GuestField = { key: string; label: string; ph: string };
+type GuestGroup = { title?: string; fields: GuestField[] };
+
 function renderGuests() {
-  const list: { key: string; label: string }[] = [];
-  (['regular', 'vip', 'vvip', 'test'] as Kind[]).forEach((k) => {
+  const groups: GuestGroup[] = [];
+  const singles: GuestField[] = [];
+  (['regular', 'test'] as Kind[]).forEach((k) => {
     for (let i = 0; i < qty[k]; i++) {
       const n = qty[k] > 1 ? ` ${i + 1}` : '';
-      const label =
-        k === 'regular' ? `Regular ticket${n}: guest name` : k === 'test' ? 'Test ticket: name' : `${KIND_LABEL[k]}${n}: table name or host`;
-      list.push({ key: `${k}-${i}`, label });
+      singles.push({ key: `${k}-${i}`, label: `${k === 'test' ? 'Test ticket' : 'Regular ticket'}${n}`, ph: 'Guest name (optional)' });
     }
   });
+  if (singles.length) groups.push({ fields: singles });
+  (['vip', 'vvip'] as Kind[]).forEach((k) => {
+    for (let i = 0; i < qty[k]; i++) {
+      const n = qty[k] > 1 ? ` ${i + 1}` : '';
+      groups.push({
+        title: `${KIND_LABEL[k]}${n}`,
+        fields: [
+          { key: `${k}-${i}-name`, label: 'Table name', ph: "e.g. St. Mary's Choir" },
+          ...[1, 2, 3, 4].map((s) => ({ key: `${k}-${i}-s${s}`, label: `Seat ${s}`, ph: s === 1 ? 'Your name if left empty' : 'Guest name (optional)' })),
+        ],
+      });
+    }
+  });
+  const all = groups.flatMap((g) => g.fields);
   const box = $('guests');
   const wrap = $('guest-fields');
-  const sig = list.map((x) => x.key).join(',');
+  const sig = all.map((x) => x.key).join(',');
   if (wrap.dataset.sig === sig) return;
   wrap.dataset.sig = sig;
-  box.hidden = list.length < 2 && !list.some((x) => !x.key.startsWith('regular') && !x.key.startsWith('test'));
-  wrap.innerHTML = list
-    .map(
-      (x) => `<div class="field"><label for="g-${x.key}">${esc(x.label)}</label>
-      <input class="input" id="g-${x.key}" data-key="${x.key}" maxlength="60" value="${esc(guestNames[x.key] || '')}" placeholder="${x.key.startsWith('vip') || x.key.startsWith('vvip') ? 'e.g. St. Mary\'s Choir table' : 'Your name if left empty'}" /></div>`,
-    )
+  const tables = groups.some((g) => g.title);
+  box.hidden = !tables && all.length < 2;
+  const field = (x: GuestField) => `<div class="field"><label for="g-${x.key}">${esc(x.label)}</label>
+      <input class="input" id="g-${x.key}" data-key="${x.key}" maxlength="60" value="${esc(guestNames[x.key] || '')}" placeholder="${esc(x.ph)}" /></div>`;
+  wrap.innerHTML = groups
+    .map((g) => (g.title ? `<fieldset class="g-table"><legend>${esc(g.title)}</legend>${g.fields.map(field).join('')}</fieldset>` : g.fields.map(field).join('')))
     .join('');
 }
 
@@ -154,12 +170,12 @@ $('guest-fields').addEventListener('input', (e) => {
   if (el.dataset.key) guestNames[el.dataset.key] = el.value;
 });
 
-function namesPayload(): Record<Kind, string[]> {
-  const out = { regular: [], vip: [], vvip: [], test: [] } as Record<Kind, string[]>;
-  (Object.keys(out) as Kind[]).forEach((k) => {
-    for (let i = 0; i < qty[k]; i++) out[k].push((guestNames[`${k}-${i}`] || '').trim());
-  });
-  return out;
+function namesPayload() {
+  const v = (key: string) => (guestNames[key] || '').trim();
+  const single = (k: Kind) => Array.from({ length: qty[k] }, (_, i) => v(`${k}-${i}`));
+  const table = (k: Kind) =>
+    Array.from({ length: qty[k] }, (_, i) => ({ name: v(`${k}-${i}-name`), seats: [1, 2, 3, 4].map((s) => v(`${k}-${i}-s${s}`)) }));
+  return { regular: single('regular'), test: single('test'), vip: table('vip'), vvip: table('vvip') };
 }
 
 $('stubs').addEventListener('click', (e) => {
@@ -196,6 +212,18 @@ setInterval(tick, 1000);
 // ---------- mobile bar ----------
 const mbar = $('mbar');
 const box = $('tickets');
+// The What's on card swings on its chain once when it first comes into view.
+const lineup = document.querySelector('.lineup-card') as HTMLElement;
+new IntersectionObserver(
+  ([en], obs) => {
+    if (en.isIntersecting) {
+      lineup.classList.add('swing');
+      obs.disconnect();
+    }
+  },
+  { threshold: 0.4 },
+).observe(lineup);
+
 const seen = new Set<Element>();
 const io = new IntersectionObserver(
   (entries) => {
