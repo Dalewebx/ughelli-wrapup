@@ -143,7 +143,7 @@ insert into public.ugh_settings (
   'Jaylayians Amusement Resort',
   '',
   '2026-12-12 10:00:00+01',
-  '["Love feast", "Swimming", "Soccer", "Table tennis", "Dancing competition", "Snooker", "Fun and games"]'::jsonb,
+  '["Love feast", "Swimming", "Soccer", "Table tennis", "Dancing competition", "Snooker"]'::jsonb,
   '0806 625 5265',
   8000, 30000, 50000,
   false, true,

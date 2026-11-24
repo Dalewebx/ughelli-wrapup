@@ -13,7 +13,7 @@ const DEFAULT: EventInfo = {
   venue: 'Jaylayians Amusement Resort',
   venue_area: '',
   starts_at: '2026-12-12T09:00:00Z',
-  highlights: ['Love feast', 'Swimming', 'Soccer', 'Table tennis', 'Dancing competition', 'Snooker', 'Fun and games'],
+  highlights: ['Love feast', 'Swimming', 'Soccer', 'Table tennis', 'Dancing competition', 'Snooker'],
   contact_phone: '0806 625 5265',
   prices: { regular: 8000, vip: 30000, vvip: 50000, test: 100 },
   sales_open: true,

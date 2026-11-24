@@ -90,7 +90,16 @@ export function db(env: Env) {
     }
   }
   return {
-    get: (table: string, query: string) => req(`/${table}?${query}`),
+    get: async (table: string, query: string) => {
+      try {
+        return await req(`/${table}?${query}`);
+      } catch (e: any) {
+        if (!/does not exist/.test(String(e?.message))) throw e;
+        const older = query.replace(/,?(table_no|seat|table_name)(?=[,)&]|$)/g, '');
+        if (older === query) throw e;
+        return req(`/${table}?${older}`);
+      }
+    },
     insert: (table: string, row: unknown) =>
       req(`/${table}`, { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(row) }),
     update: (table: string, query: string, patch: unknown) =>

@@ -9,6 +9,7 @@ alter table public.ugh_tickets add column if not exists table_name text;
 
 update public.ugh_settings
    set organizer = 'Ughelli Regional Choir · St. Cecilia Choir Warri Diocese',
+       highlights = '["Love feast", "Swimming", "Soccer", "Table tennis", "Dancing competition", "Snooker"]'::jsonb,
        about = 'The first ever Ughelli Regional Choir end of year get-together, and it promises to be a lot of fun. Come with your fellow choristers, come with your friends.'
  where id = 1;
 

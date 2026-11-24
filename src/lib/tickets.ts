@@ -6,7 +6,7 @@ export type EventBits = { title: string; venue: string; starts_at: string };
 const THEME: Record<Kind, { band: string; band2: string; ink: string; chip: string }> = {
   regular: { band: '#15131a', band2: '#2b2833', ink: '#ffffff', chip: 'rgba(255,255,255,.14)' },
   vip: { band: '#15131a', band2: '#3a2a1c', ink: '#ffffff', chip: 'rgba(255,178,26,.25)' },
-  vvip: { band: '#ff7a1a', band2: '#ffb21a', ink: '#15131a', chip: 'rgba(21,19,26,.12)' },
+  vvip: { band: '#f7dfa8', band2: '#fff1d2', ink: '#3d2c08', chip: 'rgba(61,44,8,.1)' },
   test: { band: '#8d8a96', band2: '#a9a6b1', ink: '#ffffff', chip: 'rgba(255,255,255,.22)' },
 };
 
@@ -44,6 +44,7 @@ export async function ticketCard(t: Ticket, holder: string, ev: EventBits, index
       ${used ? `<div class="tk-usedtag">Checked in ${fmtDate(t.checked_in_at!, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}</div>` : '<div class="tk-hint">Show this at the gate. It works once.</div>'}
     </div>
     <button class="btn btn-line tk-save" type="button" data-code="${t.code}">Save ticket</button>
+    <div class="tk-credit">Designed by Palmweaver</div>
   </article>`;
 }
 
@@ -179,6 +180,9 @@ export async function ticketPng(t: Ticket, holder: string, ev: EventBits, index:
   ctx.fillStyle = '#5d5a66';
   ctx.font = `400 28px ${body}`;
   ctx.fillText('Show this QR at the gate. Each code works once.', W / 2, 1600);
+  ctx.fillStyle = '#a5a2ad';
+  ctx.font = `400 22px ${body}`;
+  ctx.fillText('Designed by Palmweaver', W / 2, H - 100);
   ctx.textAlign = 'left';
 
   return new Promise((resolve) => c.toBlob((b) => resolve(b!), 'image/png'));
