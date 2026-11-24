@@ -61,7 +61,7 @@ export function withFee(price: number): { fee: number; total: number } {
 
 export function mapLink(venue: string, area: string, custom?: string): string {
   if (custom && /^https?:\/\//.test(custom)) return custom;
-  const q = [venue, area || 'Ughelli, Delta State'].filter(Boolean).join(', ');
+  const q = [venue, area].filter(Boolean).join(', ');
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 }
 
