@@ -417,6 +417,7 @@ function fillForm() {
   $<HTMLInputElement>('e-phone').value = s.contact_phone;
   $<HTMLInputElement>('e-venue').value = s.venue;
   $<HTMLInputElement>('e-area').value = s.venue_area;
+  $<HTMLInputElement>('e-map').value = s.map_url ?? '';
   $<HTMLTextAreaElement>('e-about').value = s.about;
   $<HTMLTextAreaElement>('e-high').value = (s.highlights || []).join('\n');
   $<HTMLInputElement>('e-pr').value = s.price_regular;
@@ -443,6 +444,7 @@ $('ev-form').addEventListener('submit', async (e) => {
     contact_phone: v('e-phone').trim(),
     venue: v('e-venue').trim(),
     venue_area: v('e-area').trim(),
+    map_url: v('e-map').trim(),
     about: v('e-about').trim(),
     highlights: v('e-high').split('\n').map((x) => x.trim()).filter(Boolean),
     price_regular: Number(v('e-pr')),

@@ -1,6 +1,6 @@
 import './styles/base.css';
 import './styles/event.css';
-import { api, EventInfo, esc, fmtDate, Kind, KIND_LABEL, KIND_NOTE, longDate, naira, store, timeOf, waNumber, withFee } from './lib/common';
+import { api, EventInfo, esc, fmtDate, Kind, KIND_LABEL, KIND_NOTE, longDate, naira, store, timeOf, waNumber, withFee, mapLink } from './lib/common';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -11,7 +11,7 @@ const DEFAULT: EventInfo = {
   about:
     'The first ever Ughelli Regional Choir end of year get-together, and it promises to be a lot of fun. Come with your fellow choristers, come with your friends.',
   venue: 'Jaylayians Amusement Resort',
-  venue_area: '',
+  venue_area: 'Ughelli, Delta State',
   starts_at: '2026-12-12T09:00:00Z',
   highlights: ['Love feast', 'Swimming', 'Soccer', 'Table tennis', 'Dancing competition', 'Snooker'],
   contact_phone: '0806 625 5265',
@@ -47,7 +47,7 @@ function renderInfo() {
   $('time-line').textContent = timeOf(info.starts_at);
   $('venue').textContent = info.venue;
   $('venue-area').textContent = info.venue_area;
-  $('area-pill').hidden = !info.venue_area;
+  ($('dir-link') as HTMLAnchorElement).href = mapLink(info.venue, info.venue_area, info.map_url);
   $('hero-bg').style.backgroundImage = `url("${(info.hero_image || DEFAULT_HERO).replace(/"/g, '%22')}")`;
   $('about').textContent = info.about;
   $('highlights').innerHTML = info.highlights.map((h) => `<li>${esc(h)}</li>`).join('');

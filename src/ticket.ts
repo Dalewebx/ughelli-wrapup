@@ -1,6 +1,6 @@
 import './styles/base.css';
 import './styles/ticket.css';
-import { api, EventInfo, esc, store, Ticket } from './lib/common';
+import { api, EventInfo, esc, mapLink, store, Ticket } from './lib/common';
 import { downloadBlob, EventBits, saveTicketImage, ticketCard, ticketPng } from './lib/tickets';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -205,6 +205,7 @@ async function loadEvent() {
   try {
     const info = await api<EventInfo>('/api/event');
     ev = { title: info.title, venue: info.venue, starts_at: info.starts_at };
+    ($('dir-link') as HTMLAnchorElement).href = mapLink(info.venue, info.venue_area, info.map_url);
     helpPhone = info.contact_phone || helpPhone;
     $('help-line').textContent = `Help: ${helpPhone}`;
   } catch {

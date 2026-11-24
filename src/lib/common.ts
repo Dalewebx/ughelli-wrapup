@@ -7,6 +7,7 @@ export type EventInfo = {
   about: string;
   venue: string;
   venue_area: string;
+  map_url?: string;
   starts_at: string;
   highlights: string[];
   contact_phone: string;
@@ -56,6 +57,12 @@ export function withFee(price: number): { fee: number; total: number } {
   if (total - price > 2000) total = price + 2000;
   total = Math.ceil(total);
   return { fee: total - price, total };
+}
+
+export function mapLink(venue: string, area: string, custom?: string): string {
+  if (custom && /^https?:\/\//.test(custom)) return custom;
+  const q = [venue, area || 'Ughelli, Delta State'].filter(Boolean).join(', ');
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 }
 
 export function naira(n: number): string {

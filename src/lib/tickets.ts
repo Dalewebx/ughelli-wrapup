@@ -3,47 +3,52 @@ import { esc, fmtDate, Kind, KIND_LABEL, longDate, Ticket, timeOf } from './comm
 
 export type EventBits = { title: string; venue: string; starts_at: string };
 
-const THEME: Record<Kind, { band: string; band2: string; ink: string; chip: string }> = {
-  regular: { band: '#15131a', band2: '#2b2833', ink: '#ffffff', chip: 'rgba(255,255,255,.14)' },
-  vip: { band: '#15131a', band2: '#3a2a1c', ink: '#ffffff', chip: 'rgba(255,178,26,.25)' },
-  vvip: { band: '#f7dfa8', band2: '#fff1d2', ink: '#3d2c08', chip: 'rgba(61,44,8,.1)' },
-  test: { band: '#8d8a96', band2: '#a9a6b1', ink: '#ffffff', chip: 'rgba(255,255,255,.22)' },
+type Theme = {
+  bg: string;
+  ink: string;
+  muted: string;
+  accent: string;
+  edge: string;
+  pattern?: boolean;
+  strip?: boolean;
+};
+
+// Each grade has its own look: Regular is clean white, VIP is black, VVIP is engraved champagne gold.
+const THEME: Record<Kind, Theme> = {
+  regular: { bg: '#ffffff', ink: '#15131a', muted: '#8d8a96', accent: '#d9600c', edge: '#e2e0e8', strip: true },
+  vip: { bg: '#121016', ink: '#ffffff', muted: 'rgba(255,255,255,0.55)', accent: '#ffb21a', edge: '#121016' },
+  vvip: { bg: '#fbf1da', ink: '#3d2c08', muted: '#8a7444', accent: '#8a5a00', edge: '#e6c57a', pattern: true },
+  test: { bg: '#ffffff', ink: '#15131a', muted: '#8d8a96', accent: '#8d8a96', edge: '#e2e0e8', strip: true },
 };
 
 export async function qrSvg(code: string): Promise<string> {
   return QRCode.toString(code, { type: 'svg', margin: 0, errorCorrectionLevel: 'M', color: { dark: '#15131a', light: '#ffffff' } });
 }
 
+function typeLine(t: Ticket) {
+  return `${KIND_LABEL[t.kind]}${t.seat ? ` · Seat ${t.seat} of 4` : t.admits > 1 ? ` · Admits ${t.admits}` : ''}`;
+}
+
 export async function ticketCard(t: Ticket, holder: string, ev: EventBits, index: number, total: number): Promise<string> {
-  const th = THEME[t.kind];
   const used = !!t.checked_in_at;
   const qr = await qrSvg(t.code);
   return `
-  <article class="tk ${t.kind}${used ? ' used' : ''}" style="--band:${th.band};--band2:${th.band2};--bandink:${th.ink};--chip:${th.chip}">
-    <div class="tk-band">
-      <div class="tk-ev">${esc(ev.title)}</div>
-      <div class="tk-kind">${KIND_LABEL[t.kind]}</div>
-      <div class="tk-admits">${t.seat ? `Seat ${t.seat} of 4` : `Admits ${t.admits}`}</div>
+  <article class="tk tk-${t.kind}${used ? ' used' : ''}">
+    <div class="tk-top"><span class="tk-type">${typeLine(t)}</span><span class="tk-count">${index} of ${total}</span></div>
+    <div class="tk-name">${esc(holder)}</div>
+    <div class="tk-ev">${esc(ev.title)}</div>
+    <div class="tk-meta">
+      <div><small>Date</small><b>${fmtDate(ev.starts_at, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</b></div>
+      <div><small>Time</small><b>${timeOf(ev.starts_at)}</b></div>
+      <div class="wide"><small>Venue</small><b>${esc(ev.venue)}</b></div>
+      ${t.table_name ? `<div class="wide"><small>Table</small><b>${esc(t.table_name)}</b></div>` : ''}
     </div>
-    <div class="tk-body">
-      <div class="tk-row">
-        <div><small>Name</small><b>${esc(holder)}</b></div>
-        <div class="r"><small>Ticket</small><b>${index} of ${total}</b></div>
-      </div>
-      <div class="tk-row">
-        <div><small>Date</small><b>${fmtDate(ev.starts_at, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</b></div>
-        <div class="r"><small>Time</small><b>${timeOf(ev.starts_at)}</b></div>
-      </div>
-      ${t.table_name ? `<div class="tk-row"><div><small>Table</small><b>${esc(t.table_name)}</b></div></div>` : ''}
-      <div class="tk-row"><div><small>Venue</small><b>${esc(ev.venue)}</b></div></div>
-    </div>
-    <div class="tk-perf" aria-hidden="true"></div>
     <div class="tk-qr">
       <div class="tk-qrbox" role="img" aria-label="QR code ${t.code}">${qr}</div>
       <div class="tk-code">${t.code}</div>
-      ${used ? `<div class="tk-usedtag">Checked in ${fmtDate(t.checked_in_at!, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}</div>` : '<div class="tk-hint">Show this at the gate. It works once.</div>'}
+      ${used ? `<div class="tk-usedtag">Checked in ${fmtDate(t.checked_in_at!, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}</div>` : ''}
     </div>
-    <button class="btn btn-line tk-save" type="button" data-code="${t.code}">Save ticket</button>
+    <button class="tk-save" type="button" data-code="${t.code}">Save ticket</button>
     <div class="tk-credit">Designed by Palmweaver</div>
   </article>`;
 }
@@ -79,8 +84,9 @@ export async function ticketPng(t: Ticket, holder: string, ev: EventBits, index:
   } catch {
     /* ignore */
   }
+  // Phone-screen shape so it fills the screen when opened from the gallery at the gate.
   const W = 1080;
-  const H = 1720;
+  const H = 1920;
   const c = document.createElement('canvas');
   c.width = W;
   c.height = H;
@@ -88,101 +94,125 @@ export async function ticketPng(t: Ticket, holder: string, ev: EventBits, index:
   const th = THEME[t.kind];
   const head = "'Oswald', 'Arial Narrow', sans-serif";
   const body = "-apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
+  const mono = "ui-monospace, Menlo, Consolas, monospace";
 
   ctx.fillStyle = '#f3f2f7';
   ctx.fillRect(0, 0, W, H);
 
-  const X = 70;
-  const CW = W - 140;
+  const X = 60;
+  const Y = 60;
+  const CW = W - 120;
+  const CH = H - 120;
   ctx.save();
-  ctx.shadowColor = 'rgba(18,52,59,.16)';
+  ctx.shadowColor = 'rgba(21,19,26,.18)';
   ctx.shadowBlur = 40;
   ctx.shadowOffsetY = 14;
-  roundRect(ctx, X, 70, CW, H - 140, 44);
-  ctx.fillStyle = '#ffffff';
+  roundRect(ctx, X, Y, CW, CH, 48);
+  ctx.fillStyle = th.bg;
   ctx.fill();
   ctx.restore();
 
-  // band
   ctx.save();
-  roundRect(ctx, X, 70, CW, H - 140, 44);
+  roundRect(ctx, X, Y, CW, CH, 48);
   ctx.clip();
-  const g = ctx.createLinearGradient(X, 70, X + CW, 470);
-  g.addColorStop(0, th.band);
-  g.addColorStop(1, th.band2);
-  ctx.fillStyle = g;
-  ctx.fillRect(X, 70, CW, 420);
-  ctx.restore();
-
-  ctx.fillStyle = th.ink;
-  ctx.font = `600 34px ${head}`;
-  let y = 150;
-  for (const line of wrap(ctx, ev.title, CW - 120).slice(0, 2)) {
-    ctx.fillText(line, X + 60, y);
-    y += 44;
+  if (th.pattern) {
+    ctx.strokeStyle = 'rgba(160,110,20,0.09)';
+    ctx.lineWidth = 2;
+    for (let d = -CH; d < CW + CH; d += 18) {
+      ctx.beginPath();
+      ctx.moveTo(X + d, Y);
+      ctx.lineTo(X + d - CH, Y + CH);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(X + d - CH, Y);
+      ctx.lineTo(X + d, Y + CH);
+      ctx.stroke();
+    }
   }
-  ctx.font = `700 92px ${head}`;
-  ctx.fillText(KIND_LABEL[t.kind].toUpperCase(), X + 60, y + 78);
-  ctx.font = `700 36px ${body}`;
-  const adm = t.seat ? `SEAT ${t.seat} OF 4` : `ADMITS ${t.admits}`;
-  const aw = ctx.measureText(adm).width + 48;
-  roundRect(ctx, X + 60, y + 108, aw, 62, 31);
-  ctx.fillStyle = th.chip;
-  ctx.fill();
+  if (th.strip) {
+    const g = ctx.createLinearGradient(0, Y, 0, Y + CH);
+    g.addColorStop(0, t.kind === 'test' ? '#a5a2ad' : '#ff7a1a');
+    g.addColorStop(1, t.kind === 'test' ? '#c9c6d0' : '#ffb21a');
+    ctx.fillStyle = g;
+    ctx.fillRect(X, Y, 18, CH);
+  }
+  ctx.restore();
+  if (th.pattern) {
+    ctx.strokeStyle = th.edge;
+    ctx.lineWidth = 4;
+    roundRect(ctx, X + 22, Y + 22, CW - 44, CH - 44, 34);
+    ctx.stroke();
+  }
+
+  const L = X + 80;
+  const R = X + CW - 80;
+  // top line
+  ctx.fillStyle = th.accent;
+  ctx.font = `600 40px ${head}`;
+  ctx.fillText(typeLine(t).toUpperCase(), L, Y + 130);
+  ctx.textAlign = 'right';
+  ctx.fillStyle = th.muted;
+  ctx.font = `600 36px ${head}`;
+  ctx.fillText(`${index} OF ${total}`, R, Y + 130);
+  ctx.textAlign = 'left';
+
+  // name, shrunk to fit one line
+  let size = 96;
+  ctx.font = `700 ${size}px ${head}`;
+  while (ctx.measureText(holder.toUpperCase()).width > R - L && size > 54) {
+    size -= 4;
+    ctx.font = `700 ${size}px ${head}`;
+  }
   ctx.fillStyle = th.ink;
-  ctx.fillText(adm, X + 84, y + 151);
+  ctx.fillText(holder.toUpperCase(), L, Y + 250);
+  ctx.fillStyle = th.muted;
+  ctx.font = `400 30px ${body}`;
+  ctx.fillText(wrap(ctx, ev.title, R - L)[0], L, Y + 305);
 
   // details
   const rows: [string, string, string?, string?][] = [
-    ['NAME', holder, 'TICKET', `${index} of ${total}`],
-    ['DATE', longDate(ev.starts_at), 'TIME', timeOf(ev.starts_at)],
-    ...(t.table_name ? ([['TABLE', t.table_name]] as [string, string][]) : []),
+    ['DATE', fmtDate(ev.starts_at, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }), 'TIME', timeOf(ev.starts_at)],
     ['VENUE', ev.venue],
+    ...(t.table_name ? ([['TABLE', t.table_name]] as [string, string][]) : []),
   ];
-  y = 556;
-  const step = rows.length > 3 ? 92 : 112;
+  let y = Y + 400;
   for (const [l1, v1, l2, v2] of rows) {
-    ctx.fillStyle = '#8d8a96';
+    ctx.fillStyle = th.muted;
     ctx.font = `700 24px ${body}`;
-    ctx.fillText(l1, X + 60, y);
-    if (l2) ctx.fillText(l2, X + CW - 260, y);
-    ctx.fillStyle = '#15131a';
+    ctx.fillText(l1, L, y);
+    if (l2) ctx.fillText(l2, R - 220, y);
+    ctx.fillStyle = th.ink;
     ctx.font = `700 36px ${body}`;
-    ctx.fillText(wrap(ctx, v1, l2 ? CW - 360 : CW - 120)[0], X + 60, y + 46);
-    if (v2) ctx.fillText(v2, X + CW - 260, y + 46);
-    y += step;
+    ctx.fillText(wrap(ctx, v1, l2 ? R - L - 260 : R - L)[0], L, y + 46);
+    if (v2) ctx.fillText(v2, R - 220, y + 46);
+    y += 108;
   }
 
-  // perforation
-  const py = 900;
-  ctx.fillStyle = '#f3f2f7';
-  ctx.beginPath();
-  ctx.arc(X, py, 30, 0, Math.PI * 2);
-  ctx.arc(X + CW, py, 30, 0, Math.PI * 2);
+  // QR on a white panel
+  const P = 640;
+  const px = (W - P) / 2;
+  const py = Math.max(y + 10, Y + 760);
+  roundRect(ctx, px, py, P, P, 36);
+  ctx.fillStyle = '#ffffff';
   ctx.fill();
-  ctx.strokeStyle = '#e2e0e8';
-  ctx.lineWidth = 4;
-  ctx.setLineDash([16, 14]);
-  ctx.beginPath();
-  ctx.moveTo(X + 50, py);
-  ctx.lineTo(X + CW - 50, py);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // QR
+  if (t.kind !== 'vip') {
+    ctx.strokeStyle = th.edge;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
   const qrCanvas = document.createElement('canvas');
-  await QRCode.toCanvas(qrCanvas, t.code, { width: 520, margin: 0, errorCorrectionLevel: 'M', color: { dark: '#15131a', light: '#ffffff' } });
-  ctx.drawImage(qrCanvas, (W - 520) / 2, 960, 520, 520);
-  ctx.fillStyle = '#15131a';
-  ctx.font = `700 44px ${head}`;
+  await QRCode.toCanvas(qrCanvas, t.code, { width: 560, margin: 0, errorCorrectionLevel: 'M', color: { dark: '#15131a', light: '#ffffff' } });
+  ctx.drawImage(qrCanvas, px + 40, py + 40, 560, 560);
+
   ctx.textAlign = 'center';
-  ctx.fillText(t.code, W / 2, 1550);
-  ctx.fillStyle = '#5d5a66';
+  ctx.fillStyle = th.ink;
+  ctx.font = `700 46px ${mono}`;
+  ctx.fillText(t.code, W / 2, py + P + 80);
+  ctx.fillStyle = th.muted;
   ctx.font = `400 28px ${body}`;
-  ctx.fillText('Show this QR at the gate. Each code works once.', W / 2, 1600);
-  ctx.fillStyle = '#a5a2ad';
+  ctx.fillText('Show this QR at the gate. Each code works once.', W / 2, py + P + 130);
   ctx.font = `400 22px ${body}`;
-  ctx.fillText('Designed by Palmweaver', W / 2, H - 100);
+  ctx.fillText('Designed by Palmweaver', W / 2, Y + CH - 50);
   ctx.textAlign = 'left';
 
   return new Promise((resolve) => c.toBlob((b) => resolve(b!), 'image/png'));

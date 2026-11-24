@@ -155,6 +155,37 @@
   font-size: 15px;
 }
 
+.pill-venue b {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  line-height: 1.3;
+}
+
+.pill-venue b small {
+  font-weight: 400;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.pill-venue b small:empty {
+  display: none;
+}
+
+.dir {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
 .cd-label {
   margin: 18px 0 8px;
   font-family: var(--head);

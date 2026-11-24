@@ -126,6 +126,7 @@ export function publicSettings(s: any) {
     about: s.about,
     venue: s.venue,
     venue_area: s.venue_area,
+    map_url: s.map_url || '',
     starts_at: s.starts_at,
     highlights: s.highlights || [],
     contact_phone: s.contact_phone,
