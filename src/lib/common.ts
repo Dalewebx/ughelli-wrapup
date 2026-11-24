@@ -11,6 +11,7 @@ export type EventInfo = {
   highlights: string[];
   contact_phone: string;
   prices: Record<Kind, number>;
+  notes?: Partial<Record<Kind, string>>;
   sales_open: boolean;
   test_mode: boolean;
   closed_note: string;

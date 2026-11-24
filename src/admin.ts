@@ -409,6 +409,9 @@ function fillForm() {
   $<HTMLInputElement>('e-title').value = s.title;
   $<HTMLInputElement>('e-short').value = s.short_title || '';
   $<HTMLInputElement>('e-pin').value = s.door_pin || '';
+  $<HTMLInputElement>('e-nr').value = s.note_regular ?? '1 person';
+  $<HTMLInputElement>('e-nv').value = s.note_vip ?? '';
+  $<HTMLInputElement>('e-nvv').value = s.note_vvip ?? '';
   $<HTMLInputElement>('e-organizer').value = s.organizer;
   $<HTMLInputElement>('e-date').value = toLocalInput(s.starts_at);
   $<HTMLInputElement>('e-phone').value = s.contact_phone;
@@ -432,6 +435,9 @@ $('ev-form').addEventListener('submit', async (e) => {
     title: v('e-title').trim(),
     short_title: v('e-short').trim(),
     door_pin: v('e-pin').trim(),
+    note_regular: v('e-nr').trim(),
+    note_vip: v('e-nv').trim(),
+    note_vvip: v('e-nvv').trim(),
     organizer: v('e-organizer').trim(),
     starts_at: date ? `${date}:00+01:00` : settings.starts_at,
     contact_phone: v('e-phone').trim(),

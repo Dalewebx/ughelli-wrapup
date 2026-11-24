@@ -129,6 +129,7 @@ export function publicSettings(s: any) {
     starts_at: s.starts_at,
     highlights: s.highlights || [],
     contact_phone: s.contact_phone,
+    notes: { regular: s.note_regular || '', vip: s.note_vip || '', vvip: s.note_vvip || '' },
     prices: { regular: s.price_regular, vip: s.price_vip, vvip: s.price_vvip, test: TEST_PRICE },
     sales_open: s.sales_open,
     test_mode: s.test_mode,

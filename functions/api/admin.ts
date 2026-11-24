@@ -1,7 +1,7 @@
 import { Env, bad, json, readJson, db, getSettings, isAdmin, settle, sendTicketEmail, cleanNames, phoneDigits, randomRef, MAX_PER_TYPE } from '../../server/lib';
 
 const EDITABLE: Record<string, 'text' | 'int' | 'bool' | 'date' | 'list'> = {
-  title: 'text', short_title: 'text', door_pin: 'text', organizer: 'text', about: 'text', venue: 'text', venue_area: 'text',
+  title: 'text', short_title: 'text', note_regular: 'text', note_vip: 'text', note_vvip: 'text', door_pin: 'text', organizer: 'text', about: 'text', venue: 'text', venue_area: 'text',
   starts_at: 'date', highlights: 'list', contact_phone: 'text', closed_note: 'text',
   price_regular: 'int', price_vip: 'int', price_vvip: 'int', sales_open: 'bool', test_mode: 'bool',
 };

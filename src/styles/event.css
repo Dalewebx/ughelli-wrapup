@@ -631,16 +631,6 @@
   margin: 0 0 12px;
 }
 
-.g-table {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 10px;
-}
-
-.g-table .field:first-of-type {
-  grid-column: 1 / -1;
-}
-
 .g-table legend {
   font-family: var(--head);
   font-weight: 600;

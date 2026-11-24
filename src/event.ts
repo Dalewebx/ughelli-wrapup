@@ -75,7 +75,7 @@ function renderStubs() {
       <div class="stub ${k}" data-k="${k}">
         <div class="stub-main">
           <div class="stub-name"><span>${KIND_LABEL[k]}</span>${k === 'vip' || k === 'vvip' ? '<span class="stub-badge">4 seats</span>' : ''}</div>
-          <div class="stub-note">${KIND_NOTE[k]}</div>
+          <div class="stub-note">${esc(info.notes?.[k] || KIND_NOTE[k])}</div>
           <div class="stub-price">${naira(info.prices[k])}</div>
         </div>
         <div class="stub-side">
@@ -146,7 +146,7 @@ function renderGuests() {
         title: `${KIND_LABEL[k]}${n}`,
         fields: [
           { key: `${k}-${i}-name`, label: 'Table name', ph: "e.g. St. Mary's Choir" },
-          ...[1, 2, 3, 4].map((s) => ({ key: `${k}-${i}-s${s}`, label: `Seat ${s}`, ph: s === 1 ? 'Your name if left empty' : 'Guest name (optional)' })),
+          ...[1, 2, 3, 4].map((s) => ({ key: `${k}-${i}-s${s}`, label: `Seat ${s} guest`, ph: s === 1 ? 'Your name if empty' : 'Optional' })),
         ],
       });
     }
