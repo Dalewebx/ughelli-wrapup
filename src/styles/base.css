@@ -264,13 +264,27 @@ textarea.input {
 }
 
 .credit {
-  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: rgba(255, 255, 255, 0.75);
   text-decoration: none;
-  border-bottom: 1px solid currentColor;
+  font-size: 13px;
+}
+
+.credit b {
+  background: linear-gradient(90deg, #ff7a1a, #ffb21a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
 }
 
 .credit:hover {
-  color: var(--ink);
+  color: #fff;
 }
 
 .msg-info {
@@ -301,7 +315,8 @@ textarea.input {
   font-size: 14px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 18px;
+  gap: 12px 18px;
+  align-items: center;
   justify-content: space-between;
 }
 

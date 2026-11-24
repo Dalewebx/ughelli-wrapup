@@ -75,6 +75,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     return json({ ref, url: init.data.authorization_url });
   } catch (e: any) {
     console.error(e);
-    return bad('Something went wrong. Please try again.', 500);
+    // detail is for diagnosis only; the page shows the friendly message.
+    return json({ error: 'Something went wrong. Please try again.', detail: String(e?.message || e).slice(0, 300) }, 500);
   }
 };
