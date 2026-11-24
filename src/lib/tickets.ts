@@ -34,7 +34,7 @@ export async function ticketCard(t: Ticket, holder: string, ev: EventBits, index
   const qr = await qrSvg(t.code);
   return `
   <article class="tk tk-${t.kind}${used ? ' used' : ''}">
-    <div class="tk-top"><span class="tk-type">${typeLine(t)}</span><span class="tk-count">${index} of ${total}</span></div>
+    <div class="tk-top"><span class="tk-type">${typeLine(t)}</span>${total > 1 ? `<span class="tk-count">${index} of ${total}</span>` : ''}</div>
     <div class="tk-name">${esc(holder)}</div>
     <div class="tk-ev">${esc(ev.title)}</div>
     <div class="tk-meta">
@@ -150,11 +150,13 @@ export async function ticketPng(t: Ticket, holder: string, ev: EventBits, index:
   ctx.fillStyle = th.accent;
   ctx.font = `600 40px ${head}`;
   ctx.fillText(typeLine(t).toUpperCase(), L, Y + 130);
-  ctx.textAlign = 'right';
-  ctx.fillStyle = th.muted;
-  ctx.font = `600 36px ${head}`;
-  ctx.fillText(`${index} OF ${total}`, R, Y + 130);
-  ctx.textAlign = 'left';
+  if (total > 1) {
+    ctx.textAlign = 'right';
+    ctx.fillStyle = th.muted;
+    ctx.font = `600 36px ${head}`;
+    ctx.fillText(`${index} OF ${total}`, R, Y + 130);
+    ctx.textAlign = 'left';
+  }
 
   // name, shrunk to fit one line
   let size = 96;

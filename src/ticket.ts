@@ -55,20 +55,29 @@ async function renderOrders(orders: Order[]) {
   const html: string[] = [];
   for (const o of orders) {
     if (orders.length > 1) html.push(`<div class="order-label" style="grid-column:1/-1">Order ${esc(o.ref.slice(-6))}</div>`);
-    let i = 0;
     for (const t of o.tickets) {
-      i++;
-      html.push(await ticketCard(t, t.guest_name || o.name, ev, i, o.tickets.length));
+      const [i, n] = countOf(o, t);
+      html.push(await ticketCard(t, t.guest_name || o.name, ev, i, n));
     }
   }
   grid.innerHTML = html.join('');
   show('v-tickets');
 }
 
-function findTicket(code: string): { t: Ticket; o: Order; i: number } | null {
+// "2 of 3" counts only tickets of the same type, and is hidden for seat tickets (they show "Seat 2 of 4").
+function countOf(o: Order, t: Ticket): [number, number] {
+  if (t.seat) return [0, 0];
+  const same = o.tickets.filter((x) => x.kind === t.kind && !x.seat);
+  return [same.indexOf(t) + 1, same.length];
+}
+
+function findTicket(code: string): { t: Ticket; o: Order; i: number; n: number } | null {
   for (const o of shown) {
-    const i = o.tickets.findIndex((t) => t.code === code);
-    if (i >= 0) return { t: o.tickets[i], o, i: i + 1 };
+    const t = o.tickets.find((x) => x.code === code);
+    if (t) {
+      const [i, n] = countOf(o, t);
+      return { t, o, i, n };
+    }
   }
   return null;
 }
@@ -82,7 +91,7 @@ $('tk-grid').addEventListener('click', async (e) => {
   btn.disabled = true;
   btn.textContent = 'Preparing image';
   try {
-    const blob = await ticketPng(hit.t, hit.t.guest_name || hit.o.name, ev, hit.i, hit.o.tickets.length);
+    const blob = await ticketPng(hit.t, hit.t.guest_name || hit.o.name, ev, hit.i, hit.n);
     await saveTicketImage(blob, `ticket-${hit.t.code}.png`);
   } finally {
     btn.disabled = false;
@@ -95,10 +104,9 @@ $('save-all').addEventListener('click', async () => {
   btn.disabled = true;
   try {
     for (const o of shown) {
-      let i = 0;
       for (const t of o.tickets) {
-        i++;
-        const blob = await ticketPng(t, t.guest_name || o.name, ev, i, o.tickets.length);
+        const [i, n] = countOf(o, t);
+        const blob = await ticketPng(t, t.guest_name || o.name, ev, i, n);
         downloadBlob(blob, `ticket-${t.code}.png`);
         await new Promise((r) => setTimeout(r, 450));
       }
