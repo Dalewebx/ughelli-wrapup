@@ -194,12 +194,16 @@ setInterval(tick, 1000);
 // ---------- mobile bar ----------
 const mbar = $('mbar');
 const box = $('tickets');
-new IntersectionObserver(
-  ([entry]) => {
-    mbar.classList.toggle('away', entry.isIntersecting);
+const seen = new Set<Element>();
+const io = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((en) => (en.isIntersecting ? seen.add(en.target) : seen.delete(en.target)));
+    mbar.classList.toggle('away', seen.size > 0);
   },
   { threshold: 0.12 },
-).observe(box);
+);
+io.observe(box);
+io.observe($('hero-cta'));
 $('mbar-btn').addEventListener('click', () => {
   const count = kinds().reduce((sum, k) => sum + qty[k], 0);
   (count ? $('buyer') : box).scrollIntoView({ behavior: 'smooth', block: 'start' });
