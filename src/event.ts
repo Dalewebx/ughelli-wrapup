@@ -6,7 +6,8 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 
 const DEFAULT: EventInfo = {
   title: 'Ughelli Regional Choir End of Year Annual Wrap-Up',
-  organizer: 'St. Cecilia Choir Warri Diocese, Ughelli Region',
+  short_title: 'End of Year Annual Wrap-Up',
+  organizer: 'Ughelli Regional Choir · St. Cecilia Choir Warri Diocese',
   about:
     'The first ever Ughelli Regional Choir end of year get-together, and it promises to be a lot of fun. Come with your fellow choristers, come with your friends.',
   venue: 'Jaylayians Amusement Resort',
