@@ -10,8 +10,8 @@ const DEFAULT: EventInfo = {
   organizer: 'Ughelli Regional Choir · St. Cecilia Choir Warri Diocese',
   about:
     'The first ever Ughelli Regional Choir end of year get-together, and it promises to be a lot of fun. Come with your fellow choristers, come with your friends.',
-  venue: 'Jaylayians Amusement Resort',
-  venue_area: 'Km 12, Ughelli-Agbarho Expressway, Orhokpokpor',
+  venue: "Jaylayian's Amusement Park and Resort",
+  venue_area: '',
   map_url: 'https://maps.app.goo.gl/5kQHrM4UanD5tWbS9',
   starts_at: '2026-12-12T09:00:00Z',
   highlights: ['Love feast', 'Swimming', 'Soccer', 'Table tennis', 'Dancing competition', 'Snooker'],
