@@ -17,7 +17,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const refs = mine.map((o) => o.ref).join(',');
     const tickets: any[] = await db(env).get(
       'ugh_tickets',
-      `order_ref=in.(${refs})&select=order_ref,code,kind,admits,seq,checked_in_at&order=kind.asc,seq.asc`,
+      `order_ref=in.(${refs})&select=order_ref,code,kind,admits,seq,guest_name,checked_in_at&order=kind.asc,seq.asc`,
     );
     return json({
       orders: mine.map((o) => ({ ...o, tickets: tickets.filter((t) => t.order_ref === o.ref) })),

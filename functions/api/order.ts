@@ -1,6 +1,6 @@
 import {
   Env, bad, json, readJson, getSettings, db, paystack, phoneDigits, randomRef,
-  SUBACCOUNT_DEFAULT, TEST_PRICE, MAX_PER_TYPE,
+  SUBACCOUNT_DEFAULT, TEST_PRICE, MAX_PER_TYPE, withFee,
 } from '../../server/lib';
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
@@ -31,12 +31,21 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       return bad(s.closed_note || 'Ticket sales are closed right now.');
     }
 
-    const naira =
+    const subtotal =
       items.regular * s.price_regular + items.vip * s.price_vip + items.vvip * s.price_vvip + items.test * TEST_PRICE;
+    const { fee, total: naira } = withFee(subtotal);
     const ref = randomRef();
 
+    // Optional name for each ticket. Blank means the buyer's name is used.
+    const guest_names: Record<string, string[]> = {};
+    for (const k of ['regular', 'vip', 'vvip', 'test'] as const) {
+      const list = Array.isArray(body.names?.[k]) ? body.names[k] : [];
+      guest_names[k] = Array.from({ length: items[k] }, (_, i) => String(list[i] ?? '').trim().replace(/\s+/g, ' ').slice(0, 60));
+    }
+
     await db(env).insert('ugh_orders', {
-      ref, name, phone, phone_digits: phoneDigits(phone), email, items, amount: naira * 100, is_test: isTest,
+      ref, name, phone, phone_digits: phoneDigits(phone), email, items, guest_names,
+      amount: naira * 100, ticket_total: subtotal * 100, buyer_fee: fee * 100, is_test: isTest,
     });
 
     const origin = new URL(request.url).origin;
@@ -59,6 +68,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
             variable_name: 'tickets',
             value: `Regular ${items.regular}, VIP ${items.vip}, VVIP ${items.vvip}${isTest ? ', Test 1' : ''}`,
           },
+          { display_name: 'Transaction fee', variable_name: 'fee', value: `NGN ${fee}` },
         ],
       },
     });

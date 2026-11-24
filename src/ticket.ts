@@ -41,7 +41,7 @@ async function renderOrders(orders: Order[]) {
     let i = 0;
     for (const t of o.tickets) {
       i++;
-      html.push(await ticketCard(t, o.name, ev, i, o.tickets.length));
+      html.push(await ticketCard(t, t.guest_name || o.name, ev, i, o.tickets.length));
     }
   }
   grid.innerHTML = html.join('');
@@ -65,7 +65,7 @@ $('tk-grid').addEventListener('click', async (e) => {
   btn.disabled = true;
   btn.textContent = 'Preparing image';
   try {
-    const blob = await ticketPng(hit.t, hit.o.name, ev, hit.i, hit.o.tickets.length);
+    const blob = await ticketPng(hit.t, hit.t.guest_name || hit.o.name, ev, hit.i, hit.o.tickets.length);
     await saveTicketImage(blob, `ticket-${hit.t.code}.png`);
   } finally {
     btn.disabled = false;
@@ -81,7 +81,7 @@ $('save-all').addEventListener('click', async () => {
       let i = 0;
       for (const t of o.tickets) {
         i++;
-        const blob = await ticketPng(t, o.name, ev, i, o.tickets.length);
+        const blob = await ticketPng(t, t.guest_name || o.name, ev, i, o.tickets.length);
         downloadBlob(blob, `ticket-${t.code}.png`);
         await new Promise((r) => setTimeout(r, 450));
       }

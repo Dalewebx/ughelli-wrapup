@@ -1,6 +1,6 @@
 import './styles/base.css';
 import './styles/event.css';
-import { api, BRAND_MARK, EventInfo, esc, fmtDate, iconFor, Kind, KIND_LABEL, KIND_NOTE, longDate, naira, store, timeOf, waNumber } from './lib/common';
+import { api, BRAND_MARK, EventInfo, esc, fmtDate, iconFor, Kind, KIND_LABEL, KIND_NOTE, longDate, naira, store, timeOf, waNumber, withFee } from './lib/common';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -24,6 +24,7 @@ const showTest = new URLSearchParams(location.search).get('test') === '1';
 let info: EventInfo = DEFAULT;
 const qty: Record<Kind, number> = { regular: 0, vip: 0, vvip: 0, test: 0 };
 const MAX = 10;
+const guestNames: Record<string, string> = {};
 
 $('brand').insertAdjacentHTML('afterbegin', BRAND_MARK);
 
@@ -102,7 +103,11 @@ function syncStubs() {
     (plus as HTMLButtonElement).disabled = n >= (k === 'test' ? 1 : MAX) || !canBuy(k) || otherSelected;
   });
 
-  const total = kinds().reduce((sum, k) => sum + qty[k] * info.prices[k], 0);
+  const subtotal = kinds().reduce((sum, k) => sum + qty[k] * info.prices[k], 0);
+  const { fee, total } = withFee(subtotal);
+  $('subtotal').textContent = naira(subtotal);
+  $('fee').textContent = naira(fee);
+  renderGuests();
   const count = kinds().reduce((sum, k) => sum + qty[k], 0);
   const people = qty.regular + qty.test + (qty.vip + qty.vvip) * 4;
   $('total').textContent = naira(total);
@@ -117,6 +122,43 @@ function syncStubs() {
   $('mbar-label').textContent = count ? `${count} ticket${count > 1 ? 's' : ''}` : 'From';
   $('mbar-amt').textContent = count ? naira(total) : $('from').textContent || '';
   $('mbar-btn').textContent = count ? 'Checkout' : 'Get tickets';
+}
+
+function renderGuests() {
+  const list: { key: string; label: string }[] = [];
+  (['regular', 'vip', 'vvip', 'test'] as Kind[]).forEach((k) => {
+    for (let i = 0; i < qty[k]; i++) {
+      const n = qty[k] > 1 ? ` ${i + 1}` : '';
+      const label =
+        k === 'regular' ? `Regular ticket${n}: guest name` : k === 'test' ? 'Test ticket: name' : `${KIND_LABEL[k]}${n}: table name or host`;
+      list.push({ key: `${k}-${i}`, label });
+    }
+  });
+  const box = $('guests');
+  const wrap = $('guest-fields');
+  const sig = list.map((x) => x.key).join(',');
+  if (wrap.dataset.sig === sig) return;
+  wrap.dataset.sig = sig;
+  box.hidden = list.length < 2 && !list.some((x) => !x.key.startsWith('regular') && !x.key.startsWith('test'));
+  wrap.innerHTML = list
+    .map(
+      (x) => `<div class="field"><label for="g-${x.key}">${esc(x.label)}</label>
+      <input class="input" id="g-${x.key}" data-key="${x.key}" maxlength="60" value="${esc(guestNames[x.key] || '')}" placeholder="${x.key.startsWith('vip') || x.key.startsWith('vvip') ? 'e.g. St. Mary\'s Choir table' : 'Your name if left empty'}" /></div>`,
+    )
+    .join('');
+}
+
+$('guest-fields').addEventListener('input', (e) => {
+  const el = e.target as HTMLInputElement;
+  if (el.dataset.key) guestNames[el.dataset.key] = el.value;
+});
+
+function namesPayload(): Record<Kind, string[]> {
+  const out = { regular: [], vip: [], vvip: [], test: [] } as Record<Kind, string[]>;
+  (Object.keys(out) as Kind[]).forEach((k) => {
+    for (let i = 0; i < qty[k]; i++) out[k].push((guestNames[`${k}-${i}`] || '').trim());
+  });
+  return out;
 }
 
 $('stubs').addEventListener('click', (e) => {
@@ -198,7 +240,7 @@ $('buyer').addEventListener('submit', async (e) => {
   pay.disabled = true;
   pay.innerHTML = '<span class="spinner"></span> Opening Paystack';
   try {
-    const res = await api<{ ref: string; url: string }>('/api/order', { json: { name, phone, email, items: qty } });
+    const res = await api<{ ref: string; url: string }>('/api/order', { json: { name, phone, email, items: qty, names: namesPayload() } });
     store.set('ugh_last_ref', res.ref);
     location.href = res.url;
   } catch (ex: any) {

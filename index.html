@@ -119,9 +119,10 @@
           <div class="stubs" id="stubs"></div>
 
           <form id="buyer" class="buyer" novalidate>
-            <div class="total-row">
-              <span id="count-line">No tickets yet</span>
-              <b id="total">₦0</b>
+            <div class="sum">
+              <div class="sum-row"><span id="count-line">No tickets yet</span><span id="subtotal">₦0</span></div>
+              <div class="sum-row"><span>Transaction fee</span><span id="fee">₦0</span></div>
+              <div class="sum-row sum-total"><span>Total</span><b id="total">₦0</b></div>
             </div>
             <div class="field">
               <label for="f-name">Full name</label>
@@ -134,6 +135,11 @@
             <div class="field">
               <label for="f-email">Email</label>
               <input class="input" id="f-email" name="email" type="email" inputmode="email" autocomplete="email" required />
+            </div>
+            <div class="guests" id="guests" hidden>
+              <h3>Who's coming?</h3>
+              <p class="guests-note">Optional. The name goes on each ticket. Leave a box empty to use your own name.</p>
+              <div id="guest-fields"></div>
             </div>
             <div class="msg msg-error" id="err" hidden></div>
             <button class="btn btn-primary btn-block pay" id="pay" type="submit" disabled>Choose your tickets</button>

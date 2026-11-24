@@ -7,6 +7,9 @@ export type Env = {
   ADMIN_PASSWORD: string;
   DOOR_PIN?: string;
   PAYSTACK_SUBACCOUNT?: string;
+  RESEND_API_KEY?: string;
+  RESEND_FROM?: string;
+  SITE_URL?: string;
 };
 
 export const SUBACCOUNT_DEFAULT = 'ACCT_2m04sitmmxwwohm';
@@ -14,6 +17,17 @@ export const TEST_PRICE = 100; // naira
 export const MAX_PER_TYPE = 10;
 export const KINDS = ['regular', 'vip', 'vvip', 'test'] as const;
 export type Kind = (typeof KINDS)[number];
+
+// Passes the Paystack fee to the buyer so the region still receives the full ticket price.
+// Paystack NG: 1.5% + N100 (N100 waived under N2,500), capped at N2,000. Formula from Paystack's docs.
+export function withFee(price: number): { fee: number; total: number } {
+  if (price <= 0) return { fee: 0, total: 0 };
+  let total = price / 0.985;
+  if (total >= 2500) total = (price + 100) / 0.985;
+  if (total - price > 2000) total = price + 2000;
+  total = Math.ceil(total);
+  return { fee: total - price, total };
+}
 
 export function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -162,7 +176,7 @@ export async function settle(env: Env, ref: string): Promise<'paid' | 'pending' 
   const main = fs && fs.integration != null ? Number(fs.integration) : 0;
   const sub = fs && fs.subaccount != null ? Number(fs.subaccount) : Number(t.amount) - fee - main;
 
-  await d.rpc('ugh_mark_paid', {
+  const first = await d.rpc('ugh_mark_paid', {
     p_ref: ref,
     p_fee: fee,
     p_sub: sub,
@@ -175,13 +189,83 @@ export async function settle(env: Env, ref: string): Promise<'paid' | 'pending' 
     p_paid_at: t.paid_at || t.paidAt || null,
     p_channel: t.channel || null,
   });
+  if (first === true) {
+    try {
+      await sendTicketEmail(env, ref);
+    } catch (e) {
+      console.error('email failed', e);
+    }
+  }
   return 'paid';
+}
+
+const LABEL: Record<string, string> = { regular: 'Regular', vip: 'VIP Table', vvip: 'VVIP Table', test: 'Test ticket' };
+
+function escHtml(s: unknown): string {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+}
+
+// Sends the "your tickets" email once, right after payment. Skipped quietly if Resend isn't set up.
+export async function sendTicketEmail(env: Env, ref: string) {
+  if (!env.RESEND_API_KEY) return;
+  const d = db(env);
+  const [order] = await d.get('ugh_orders', `ref=eq.${encodeURIComponent(ref)}&select=*`);
+  if (!order || order.email_sent_at) return;
+  const tickets: any[] = await d.get(
+    'ugh_tickets',
+    `order_ref=eq.${encodeURIComponent(ref)}&select=code,kind,admits,guest_name&order=kind.asc,seq.asc`,
+  );
+  const s = await getSettings(env);
+  const site = (env.SITE_URL || 'https://ughelli.sccwd.org').replace(/\/+$/, '');
+  const link = `${site}/ticket?ref=${ref}`;
+  const when = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Africa/Lagos', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true,
+  }).format(new Date(s.starts_at));
+  const first = String(order.name).split(/\s+/)[0];
+  const rows = tickets
+    .map(
+      (t) => `<tr>
+        <td style="padding:12px 0;border-bottom:1px solid #e7f1f2;font:700 15px Arial,sans-serif;color:#12343b">${LABEL[t.kind] || t.kind}<br><span style="font:400 14px Arial,sans-serif;color:#4b6b71">${escHtml(t.guest_name || order.name)} &middot; admits ${t.admits}</span></td>
+        <td style="padding:12px 0;border-bottom:1px solid #e7f1f2;font:700 14px 'Courier New',monospace;color:#12343b;text-align:right">${t.code}</td>
+      </tr>`,
+    )
+    .join('');
+  const html = `<!doctype html><html><body style="margin:0;background:#f3f9f9;padding:24px 12px">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:18px;overflow:hidden">
+    <tr><td style="background:#0fa3b1;padding:26px 26px 22px;font:700 22px Arial,sans-serif;color:#ffffff">${escHtml(s.title)}</td></tr>
+    <tr><td style="padding:24px 26px 8px;font:400 16px/1.55 Arial,sans-serif;color:#12343b">
+      Hi ${escHtml(first)}, your payment went through and your tickets are ready.<br><br>
+      <b>${escHtml(when)}</b><br>${escHtml(s.venue)}${s.venue_area ? ', ' + escHtml(s.venue_area) : ''}
+    </td></tr>
+    <tr><td style="padding:8px 26px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table></td></tr>
+    <tr><td style="padding:22px 26px 8px" align="center">
+      <a href="${link}" style="display:inline-block;background:#0a7a86;color:#ffffff;text-decoration:none;font:700 16px Arial,sans-serif;padding:15px 28px;border-radius:12px">Open my QR tickets</a>
+    </td></tr>
+    <tr><td style="padding:12px 26px 26px;font:400 14px/1.5 Arial,sans-serif;color:#4b6b71" align="center">
+      Show the QR at the gate. Each code works once, and a table QR lets in all 4 people.<br>
+      Lost this email? Use Find my ticket on ${escHtml(site.replace(/^https?:\/\//, ''))} with your phone number.<br>
+      Help: ${escHtml(s.contact_phone)}
+    </td></tr>
+  </table></body></html>`;
+
+  const r = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: env.RESEND_FROM || 'Ughelli Wrap-Up <tickets@sccwd.org>',
+      to: [order.email],
+      subject: `Your tickets: ${s.title}`,
+      html,
+    }),
+  });
+  if (!r.ok) throw new Error(`Resend ${r.status}: ${(await r.text()).slice(0, 200)}`);
+  await d.update('ugh_orders', `ref=eq.${encodeURIComponent(ref)}`, { email_sent_at: new Date().toISOString() });
 }
 
 export async function ticketsFor(env: Env, ref: string) {
   return db(env).get(
     'ugh_tickets',
-    `order_ref=eq.${encodeURIComponent(ref)}&select=code,kind,admits,seq,checked_in_at&order=kind.asc,seq.asc`,
+    `order_ref=eq.${encodeURIComponent(ref)}&select=code,kind,admits,seq,guest_name,checked_in_at&order=kind.asc,seq.asc`,
   );
 }
 

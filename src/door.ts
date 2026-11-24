@@ -80,7 +80,8 @@ async function check(raw: string) {
     const when = res.at ? fmtDate(res.at, { hour: 'numeric', minute: '2-digit', hour12: true }) : '';
     if (res.result === 'ok') {
       buzz(true);
-      showResult('ok', ICON_OK, `ADMIT ${res.admits}`, kind + (res.test ? ' (test)' : ''), res.name, esc(res.code), 2600);
+      const buyer = res.buyer && res.buyer !== res.name ? `Bought by ${esc(res.buyer)}<br>` : '';
+      showResult('ok', ICON_OK, `ADMIT ${res.admits}`, kind + (res.test ? ' (test)' : ''), res.name, `${buyer}${esc(res.code)}`, 2600);
       $('last').textContent = `Last: ${res.name}, ${kind}, admitted ${res.admits}`;
     } else if (res.result === 'used') {
       buzz(false);

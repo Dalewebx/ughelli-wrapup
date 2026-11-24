@@ -16,6 +16,8 @@ Saturday 12 December 2026, 10am, Jaylayians Amusement Resort. Live at https://ug
 - Payments: Paystack business "Regional EOY Party". Every payment uses subaccount `ACCT_2m04sitmmxwwohm` with `bearer: "subaccount"` (region pays the fee, 100% settles to them).
 - Tickets are issued by `ugh_mark_paid` exactly once, from whichever comes first: the return page (`/api/verify`), the webhook (`/api/paystack-webhook`, HMAC SHA512) or admin Recheck.
 - VIP and VVIP are tables of 4: one QR, scan shows ADMIT 4.
+- Buyer pays the Paystack fee as a "Transaction fee" line (formula in `withFee`, same in server and client), so the region receives the full ticket price.
+- Each ticket can carry its own guest name (or table name); blank uses the buyer's name.
 
 ## Environment variables (Cloudflare Pages, Production)
 | Name | Value |
@@ -26,11 +28,13 @@ Saturday 12 December 2026, 10am, Jaylayians Amusement Resort. Live at https://ug
 | ADMIN_PASSWORD | Admin password (secret) |
 | DOOR_PIN | PIN for ushers on /door (secret) |
 | PAYSTACK_SUBACCOUNT | Optional. Defaults to ACCT_2m04sitmmxwwohm |
+| RESEND_API_KEY | Optional. Turns on the ticket email after payment (Resend free plan) |
+| RESEND_FROM | Optional. Defaults to `Ughelli Wrap-Up <tickets@sccwd.org>` (sccwd.org must be verified in Resend) |
 
 Paystack webhook URL (Settings > API Keys & Webhooks): `https://ughelli.sccwd.org/api/paystack-webhook`
 
 ## Launch checklist
-1. Run `sql/schema.sql` in Supabase. Sales start closed, test ticket on.
+1. Run `sql/schema.sql`, then `sql/002_names_fees_email.sql` in Supabase. Sales start closed, test ticket on.
 2. Open `/?test=1`, buy the ₦100 test ticket with a real card, confirm the QR shows and admin shows the fee split.
 3. Scan the test QR on `/door` (should admit), scan again (should say ALREADY USED).
 4. In admin: turn the test ticket off, turn sales on.

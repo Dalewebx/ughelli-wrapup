@@ -1,4 +1,4 @@
-import { Env, bad, json, readJson, db, getSettings, isAdmin, settle } from '../../server/lib';
+import { Env, bad, json, readJson, db, getSettings, isAdmin, settle, sendTicketEmail } from '../../server/lib';
 
 const EDITABLE: Record<string, 'text' | 'int' | 'bool' | 'date' | 'list'> = {
   title: 'text', organizer: 'text', about: 'text', venue: 'text', venue_area: 'text',
@@ -17,10 +17,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         getSettings(env),
         d.get(
           'ugh_orders',
-          'select=*,ugh_tickets(code,kind,admits,seq,checked_in_at,checked_in_by)&order=created_at.desc&limit=5000',
+          'select=*,ugh_tickets(code,kind,admits,seq,guest_name,checked_in_at,checked_in_by)&order=created_at.desc&limit=5000',
         ),
       ]);
-      return json({ settings, orders });
+      return json({ settings, orders, email_ready: !!env.RESEND_API_KEY });
     }
 
     if (body.action === 'save') {
@@ -49,6 +49,14 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     if (body.action === 'recheck') {
       const status = await settle(env, String(body.ref || ''));
       return json({ status });
+    }
+
+    if (body.action === 'resend_email') {
+      if (!env.RESEND_API_KEY) return bad('Email is not set up yet (RESEND_API_KEY missing).');
+      const ref = String(body.ref || '');
+      await d.update('ugh_orders', `ref=eq.${encodeURIComponent(ref)}&status=eq.paid`, { email_sent_at: null });
+      await sendTicketEmail(env, ref);
+      return json({ ok: true });
     }
 
     if (body.action === 'undo_checkin') {

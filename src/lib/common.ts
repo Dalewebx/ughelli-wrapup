@@ -20,6 +20,7 @@ export type Ticket = {
   kind: Kind;
   admits: number;
   seq: number;
+  guest_name?: string | null;
   checked_in_at: string | null;
   checked_in_by?: string | null;
   order_ref?: string;
@@ -40,6 +41,16 @@ export const KIND_NOTE: Record<Kind, string> = {
 };
 
 export const TZ = 'Africa/Lagos';
+
+// Same formula as the server. Buyer pays the Paystack fee so the region receives the full ticket price.
+export function withFee(price: number): { fee: number; total: number } {
+  if (price <= 0) return { fee: 0, total: 0 };
+  let total = price / 0.985;
+  if (total >= 2500) total = (price + 100) / 0.985;
+  if (total - price > 2000) total = price + 2000;
+  total = Math.ceil(total);
+  return { fee: total - price, total };
+}
 
 export function naira(n: number): string {
   return '₦' + Math.round(n).toLocaleString('en-NG');

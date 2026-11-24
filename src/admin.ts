@@ -11,6 +11,10 @@ type Order = {
   email: string;
   items: Record<Kind, number>;
   amount: number;
+  ticket_total: number | null;
+  buyer_fee: number | null;
+  split: any;
+  email_sent_at: string | null;
   is_test: boolean;
   status: 'pending' | 'paid' | 'review';
   paystack_fee: number | null;
@@ -32,6 +36,7 @@ let key = (() => {
 let settings: any = null;
 let orders: Order[] = [];
 let filter = 'paid';
+let emailReady = false;
 
 function toast(msg: string) {
   const t = $('toast');
@@ -92,6 +97,7 @@ async function load() {
   const res = await call({ action: 'load' });
   settings = res.settings;
   orders = res.orders;
+  emailReady = !!res.email_ready;
   $('v-login').hidden = true;
   $('v-app').hidden = false;
   renderAll();
@@ -138,15 +144,17 @@ function sum(list: Order[], f: (o: Order) => number) {
 function renderOverview() {
   const paid = orders.filter((o) => o.status === 'paid' && !o.is_test);
   const gross = sum(paid, (o) => o.amount);
+  const ticketSales = sum(paid, (o) => o.ticket_total ?? o.amount);
+  const buyerFees = sum(paid, (o) => o.buyer_fee ?? 0);
   const fees = sum(paid, (o) => o.paystack_fee ?? 0);
   const settle = sum(paid, (o) => o.subaccount_share ?? o.amount - (o.paystack_fee ?? 0));
   const tickets = paid.flatMap((o) => o.ugh_tickets);
   const people = tickets.reduce((s, t) => s + t.admits, 0);
 
   $('stats').innerHTML = [
-    ['Total paid', nairaKobo(gross), `${paid.length} order${paid.length === 1 ? '' : 's'}`, 'hero'],
-    ['Paystack fees', nairaKobo(fees), 'Paid by the region (subaccount)', ''],
-    ['Settles to region', nairaKobo(settle), 'After fees', ''],
+    ['Ticket sales', nairaKobo(ticketSales), `${paid.length} order${paid.length === 1 ? '' : 's'} · buyers paid ${nairaKobo(gross)} with fees`, 'hero'],
+    ['Paystack fees', nairaKobo(fees), `Buyers covered ${nairaKobo(buyerFees)} of it`, ''],
+    ['Settles to region', nairaKobo(settle), 'Into the region subaccount', ''],
     ['Guests', String(people), `${tickets.length} ticket${tickets.length === 1 ? '' : 's'}`, ''],
   ]
     .map(([l, v, s, c]) => `<div class="stat ${c}"><small>${l}</small><b>${v}</b><span>${s}</span></div>`)
@@ -162,7 +170,7 @@ function renderOverview() {
   $('by-type').innerHTML =
     `<tr><th>Type</th><th class="n">Sold</th><th class="n">People</th><th class="n">At today's price</th></tr>` +
     rows.map((r) => `<tr><td>${KIND_LABEL[r.k]}</td><td class="n">${r.count}</td><td class="n">${r.people}</td><td class="n">${naira(r.rev)}</td></tr>`).join('') +
-    `<tr><td>Total</td><td class="n">${sum(rows as any, (r: any) => r.count)}</td><td class="n">${people}</td><td class="n">${nairaKobo(gross)}</td></tr>`;
+    `<tr><td>Total</td><td class="n">${sum(rows as any, (r: any) => r.count)}</td><td class="n">${people}</td><td class="n">${nairaKobo(ticketSales)}</td></tr>`;
 
   const inT = tickets.filter((t) => t.checked_in_at);
   const inP = inT.reduce((s, t) => s + t.admits, 0);
@@ -183,7 +191,8 @@ function renderOverview() {
       <div class="kv"><span>${esc(o.name)} · ${fmtDate(o.paid_at!, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}</span><b>${nairaKobo(o.amount)}</b></div>
       <div class="kv"><span>Paystack fee</span><b>${nairaKobo(o.paystack_fee ?? 0)}</b></div>
       <div class="kv"><span>To region subaccount</span><b>${nairaKobo(o.subaccount_share ?? 0)}</b></div>
-      <div class="kv"><span>Kept on main account</span><b>${nairaKobo(o.main_share ?? 0)}</b></div>`,
+      <div class="kv"><span>Kept on main account</span><b>${nairaKobo(o.main_share ?? 0)}</b></div>
+      <div class="kv"><span>Subaccount Paystack confirmed</span><b>${esc(o.split?.subaccount || 'Not reported')}</b></div>`,
     )
     .join('<hr style="border:0;border-top:2px solid var(--line-soft);margin:10px 0">');
 
@@ -222,7 +231,7 @@ function renderBuyers() {
       o.email.toLowerCase().includes(q) ||
       (qd.length >= 4 && o.phone.replace(/\D/g, '').includes(qd)) ||
       o.ref.toLowerCase().includes(q) ||
-      o.ugh_tickets.some((t) => t.code.toLowerCase().includes(q))
+      o.ugh_tickets.some((t) => t.code.toLowerCase().includes(q) || (t.guest_name || '').toLowerCase().includes(q))
     );
   });
   $('buyers-count').textContent = `${list.length} order${list.length === 1 ? '' : 's'}`;
@@ -245,13 +254,16 @@ function renderBuyers() {
             <span>Phone: ${esc(o.phone)}</span>
             <span>Email: ${esc(o.email)}</span>
             <span>Ordered: ${fmtDate(o.created_at, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}${o.paid_at ? ` · Paid: ${fmtDate(o.paid_at, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}` : ''}</span>
-            ${o.status === 'paid' ? `<span>Paystack fee ${nairaKobo(o.paystack_fee ?? 0)} · To region ${nairaKobo(o.subaccount_share ?? 0)}${o.channel ? ` · ${esc(o.channel)}` : ''}</span>` : ''}
+            ${o.buyer_fee != null ? `<span>Tickets ${nairaKobo(o.ticket_total ?? 0)} + transaction fee ${nairaKobo(o.buyer_fee)}</span>` : ''}
+            ${o.status === 'paid' ? `<span>Paystack fee ${nairaKobo(o.paystack_fee ?? 0)} · To region ${nairaKobo(o.subaccount_share ?? 0)}${o.channel ? ` · ${esc(o.channel)}` : ''}</span>
+            <span>Subaccount Paystack confirmed: ${esc(o.split?.subaccount || 'Not reported')}</span>
+            <span>Ticket email: ${o.email_sent_at ? 'sent ' + fmtDate(o.email_sent_at, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : emailReady ? 'not sent' : 'email not set up'}</span>` : ''}
             <span>Ref: ${esc(o.ref)}</span>
           </div>
           <div class="b-tix">
             ${o.ugh_tickets
               .map(
-                (t) => `<div class="b-tk"><span><code>${t.code}</code> · ${KIND_LABEL[t.kind]}${t.admits > 1 ? ` (admits ${t.admits})` : ''}</span>
+                (t) => `<div class="b-tk"><span><code>${t.code}</code> · ${KIND_LABEL[t.kind]}${t.admits > 1 ? ` (admits ${t.admits})` : ''}${t.guest_name ? ` · ${esc(t.guest_name)}` : ''}</span>
                 ${t.checked_in_at ? `<span><span class="in">In ${fmtDate(t.checked_in_at, { hour: 'numeric', minute: '2-digit' })}${t.checked_in_by ? ` by ${esc(t.checked_in_by)}` : ''}</span> <button class="linkbtn" data-undo="${t.code}" type="button">Undo</button></span>` : '<span class="muted">Not in yet</span>'}</div>`,
               )
               .join('')}
@@ -259,7 +271,8 @@ function renderBuyers() {
           <div class="b-actions">
             ${o.status !== 'paid' ? `<button class="btn btn-primary sm" type="button" data-recheck="${o.ref}">Recheck with Paystack</button>` : ''}
             ${o.status === 'paid' ? `<a class="btn btn-soft sm" target="_blank" rel="noopener" href="https://wa.me/${waNumber(o.phone)}?text=${encodeURIComponent(msg)}">Send tickets on WhatsApp</a>
-            <button class="btn btn-line sm" type="button" data-copy="${link}">Copy ticket link</button>` : ''}
+            <button class="btn btn-line sm" type="button" data-copy="${link}">Copy ticket link</button>
+            ${emailReady ? `<button class="btn btn-line sm" type="button" data-email="${o.ref}">Resend email</button>` : ''}` : ''}
           </div>
         </div>
       </details>`;
@@ -272,6 +285,18 @@ $('buyers').addEventListener('click', async (e) => {
   const re = el.closest('[data-recheck]') as HTMLButtonElement | null;
   const undo = el.closest('[data-undo]') as HTMLButtonElement | null;
   const copy = el.closest('[data-copy]') as HTMLButtonElement | null;
+  const mail = el.closest('[data-email]') as HTMLButtonElement | null;
+  if (mail) {
+    mail.disabled = true;
+    try {
+      await call({ action: 'resend_email', ref: mail.dataset.email });
+      toast('Email sent');
+      await load();
+    } catch (ex: any) {
+      toast(ex.message);
+      mail.disabled = false;
+    }
+  }
   if (re) {
     re.disabled = true;
     re.textContent = 'Checking';
