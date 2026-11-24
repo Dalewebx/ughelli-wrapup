@@ -20,7 +20,7 @@ const DEFAULT: EventInfo = {
   closed_note: '',
 };
 
-const DEFAULT_HERO = 'https://images.unsplash.com/photo-1768243803432-f95b00d29de2?w=1400&q=70&auto=format';
+const DEFAULT_HERO = 'https://images.unsplash.com/photo-1782936875912-0c500484e5e4?w=1400&q=70&auto=format';
 const showTest = new URLSearchParams(location.search).get('test') === '1';
 let info: EventInfo = DEFAULT;
 const qty: Record<Kind, number> = { regular: 0, vip: 0, vvip: 0, test: 0 };
@@ -113,6 +113,8 @@ function syncStubs() {
   $('count-line').textContent = count
     ? `${count} ticket${count > 1 ? 's' : ''} · ${people} ${people > 1 ? 'people' : 'person'}`
     : 'No tickets yet';
+  $('buyer').hidden = count === 0;
+  $('pick').hidden = count > 0;
   const pay = $<HTMLButtonElement>('pay');
   if (!pay.dataset.busy) {
     pay.disabled = count === 0;

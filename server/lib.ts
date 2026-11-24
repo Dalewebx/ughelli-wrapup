@@ -207,11 +207,11 @@ function escHtml(s: unknown): string {
 }
 
 // Sends the "your tickets" email once, right after payment. Skipped quietly if Resend isn't set up.
-export async function sendTicketEmail(env: Env, ref: string) {
+export async function sendTicketEmail(env: Env, ref: string, force = false) {
   if (!env.RESEND_API_KEY) return;
   const d = db(env);
   const [order] = await d.get('ugh_orders', `ref=eq.${encodeURIComponent(ref)}&select=*`);
-  if (!order || order.email_sent_at) return;
+  if (!order || order.status !== 'paid' || (order.email_sent_at && !force)) return;
   const tickets: any[] = await d.get(
     'ugh_tickets',
     `order_ref=eq.${encodeURIComponent(ref)}&select=code,kind,admits,guest_name&order=kind.asc,seq.asc`,

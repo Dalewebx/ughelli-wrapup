@@ -1,15 +1,38 @@
 .ev {
+  --gap: 14px;
   max-width: 1180px;
   margin: 0 auto;
   padding: 0 12px 24px;
   display: grid;
-  gap: 14px;
+  gap: var(--gap);
 }
 
+/* Phone order: hero, what's on, tickets, about */
 .ev-left {
-  display: grid;
-  gap: 14px;
-  align-content: start;
+  display: contents;
+}
+
+.hero {
+  order: 1;
+}
+
+.lineup-card {
+  order: 2;
+}
+
+.ev-buy {
+  order: 3;
+}
+
+.about-card {
+  order: 4;
+}
+
+.pick {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--ink-faint);
 }
 
 /* ---------- hero ---------- */
@@ -28,7 +51,7 @@
 .hero-bg {
   position: absolute;
   inset: 0;
-  background: center 30% / cover no-repeat;
+  background: center 55% / cover no-repeat;
   animation: hero-drift 24s ease-in-out infinite alternate;
   will-change: transform;
 }
@@ -229,8 +252,46 @@
 }
 
 .lineup-card {
+  position: relative;
   background: var(--ink);
   color: #fff;
+}
+
+.hang {
+  position: absolute;
+  top: calc(-1 * var(--gap) - 8px);
+  width: 2px;
+  height: calc(var(--gap) + 18px);
+  background: linear-gradient(180deg, #ffb21a, #ff7a1a);
+}
+
+.hang.l {
+  left: 18%;
+}
+
+.hang.r {
+  right: 18%;
+}
+
+.hang::before,
+.hang::after {
+  content: '';
+  position: absolute;
+  left: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffb21a;
+  box-shadow: 0 0 0 3px rgba(255, 178, 26, 0.25);
+}
+
+.hang::before {
+  top: -4px;
+}
+
+.hang::after {
+  bottom: -4px;
+  background: #ff7a1a;
 }
 
 .lineup-card .label {
@@ -242,9 +303,9 @@
   margin: 0;
   padding: 0;
   font-family: var(--head);
-  font-weight: 600;
-  font-size: 26px;
-  line-height: 1.3;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 1.45;
   text-transform: uppercase;
   letter-spacing: 0.01em;
 }
@@ -256,9 +317,9 @@
 .lineup li:not(:last-child)::after {
   content: '';
   display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin: 0 12px 0.22em;
+  width: 6px;
+  height: 6px;
+  margin: 0 10px 0.2em;
   border-radius: 50%;
   background: linear-gradient(90deg, var(--accent), var(--accent-2));
 }
@@ -605,15 +666,20 @@
 
 @media (min-width: 980px) {
   .lineup {
-    font-size: 30px;
+    font-size: 23px;
   }
   .ev {
     grid-template-columns: minmax(0, 1fr) 430px;
     gap: 22px;
     align-items: start;
   }
+  .ev {
+    --gap: 22px;
+  }
   .ev-left {
-    gap: 22px;
+    display: grid;
+    gap: var(--gap);
+    align-content: start;
   }
   .ev-buy {
     position: sticky;

@@ -156,27 +156,28 @@ function pending(ref: string, note?: string) {
 $('find-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const err = $('find-err');
+  const ok = $('find-ok');
   err.hidden = true;
-  const phone = $<HTMLInputElement>('q-phone').value.trim();
-  const name = $<HTMLInputElement>('q-name').value.trim();
+  ok.hidden = true;
+  const query = $<HTMLInputElement>('q').value.trim();
   const btn = $<HTMLButtonElement>('find-btn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Searching';
+  btn.innerHTML = '<span class="spinner"></span> Sending';
   try {
-    const res = await api<{ orders: Order[] }>('/api/find', { json: { phone, name } });
-    if (!res.orders.length) {
-      err.textContent = 'No paid tickets match that phone number and first name. Check the number you used when paying.';
+    const res = await api<{ found: number; to: string[] }>('/api/find', { json: { query } });
+    if (!res.found) {
+      err.textContent = `We couldn't find paid tickets for that. Check the number or email you used, or call ${helpPhone}.`;
       err.hidden = false;
     } else {
-      store.set('ugh_last_ref', res.orders[0].ref);
-      await renderOrders(res.orders);
+      ok.textContent = `Done. Your tickets have been sent to ${res.to.join(' and ')}. Check your inbox, and your spam folder too.`;
+      ok.hidden = false;
     }
   } catch (ex: any) {
     err.textContent = ex.message;
     err.hidden = false;
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Show my tickets';
+    btn.textContent = 'Send my tickets';
   }
 });
 

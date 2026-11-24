@@ -16,7 +16,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
-    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1768243803432-f95b00d29de2?w=1400&q=70&auto=format" />
+    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1782936875912-0c500484e5e4?w=1400&q=70&auto=format" />
   </head>
   <body>
     <header class="topbar">
@@ -57,11 +57,12 @@
         </section>
 
         <section class="card lineup-card">
+          <i class="hang l" aria-hidden="true"></i><i class="hang r" aria-hidden="true"></i>
           <h2 class="label">What's on</h2>
           <ul class="lineup" id="highlights"></ul>
         </section>
 
-        <section class="card">
+        <section class="card about-card">
           <h2 class="label">About</h2>
           <p class="about" id="about"></p>
           <div class="contact">
@@ -83,7 +84,9 @@
 
           <div class="stubs" id="stubs"></div>
 
-          <form id="buyer" class="buyer" novalidate>
+          <p class="pick" id="pick">Pick your tickets above to continue.</p>
+
+          <form id="buyer" class="buyer" novalidate hidden>
             <div class="sum">
               <div class="sum-row"><span id="count-line">No tickets yet</span><span id="subtotal">₦0</span></div>
               <div class="sum-row"><span>Transaction fee</span><span id="fee">₦0</span></div>
@@ -123,7 +126,7 @@
 
     <footer class="site-foot">
       <span>SCCWD Ughelli Region · End of Year Wrap-Up 2026</span>
-      <span>Woven with care by Palmweaver</span>
+      <a class="credit" href="https://wa.me/2349056209920?text=Hi%2C%20I%20saw%20the%20Ughelli%20Wrap-Up%20ticket%20site%20and%20I%27d%20like%20a%20site%20like%20it." target="_blank" rel="noopener">Woven with care by Palmweaver</a>
     </footer>
 
     <div class="mbar" id="mbar">
