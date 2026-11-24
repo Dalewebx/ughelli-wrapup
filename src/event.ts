@@ -8,7 +8,7 @@ const DEFAULT: EventInfo = {
   title: 'Ughelli Regional Choir End of Year Annual Wrap-Up',
   organizer: 'St. Cecilia Choir Warri Diocese, Ughelli Region',
   about:
-    'One full day for the Ughelli Region choir family to close the year together. Good food at the love feast, a swim, a match on the pitch, table tennis, snooker and a dancing competition to settle who really has the moves. Come with your choir, come with your friends.',
+    'The first ever Ughelli Regional Choir end of year get-together, and it promises to be a lot of fun. Come with your fellow choristers, come with your friends.',
   venue: 'Jaylayians Amusement Resort',
   venue_area: '',
   starts_at: '2026-12-12T09:00:00Z',
@@ -47,7 +47,7 @@ function renderInfo() {
   $('venue').textContent = info.venue;
   $('venue-area').textContent = info.venue_area;
   $('area-pill').hidden = !info.venue_area;
-  $('hero').style.backgroundImage = `url("${(info.hero_image || DEFAULT_HERO).replace(/"/g, '%22')}")`;
+  $('hero-bg').style.backgroundImage = `url("${(info.hero_image || DEFAULT_HERO).replace(/"/g, '%22')}")`;
   $('about').textContent = info.about;
   $('highlights').innerHTML = info.highlights.map((h) => `<li>${esc(h)}</li>`).join('');
 

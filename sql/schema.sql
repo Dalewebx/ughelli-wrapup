@@ -139,7 +139,7 @@ insert into public.ugh_settings (
   1,
   'Ughelli Regional Choir End of Year Annual Wrap-Up',
   'St. Cecilia Choir Warri Diocese, Ughelli Region',
-  'One full day for the Ughelli Region choir family to close the year together. Good food at the love feast, a swim, a match on the pitch, table tennis, snooker and a dancing competition to settle who really has the moves. Come with your choir, come with your friends.',
+  'The first ever Ughelli Regional Choir end of year get-together, and it promises to be a lot of fun. Come with your fellow choristers, come with your friends.',
   'Jaylayians Amusement Resort',
   '',
   '2026-12-12 10:00:00+01',
